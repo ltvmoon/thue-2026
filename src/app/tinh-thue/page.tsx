@@ -52,6 +52,7 @@ const TaxTreatyReference = lazy(() => import('@/components/TaxTreatyReference').
 const CoupleTaxOptimizer = lazy(() => import('@/components/CoupleTaxOptimizer').then(m => ({ default: m.CoupleTaxOptimizer })));
 const ContentCreatorTax = lazy(() => import('@/components/ContentCreatorTax').then(m => ({ default: m.ContentCreatorTax })));
 const CryptoTax = lazy(() => import('@/components/CryptoTax').then(m => ({ default: m.CryptoTax })));
+const GoldTaxCalculator = lazy(() => import('@/components/GoldTaxCalculator').then(m => ({ default: m.GoldTaxCalculator })));
 const TaxDeadlineManager = lazy(() => import('@/components/TaxDeadlineManager'));
 const IncomeSummaryDashboard = lazy(() => import('@/components/IncomeSummaryDashboard'));
 const RegionComparison = lazy(() => import('@/components/RegionComparison'));
@@ -111,6 +112,8 @@ import {
   DEFAULT_CONTENT_CREATOR_STATE,
   CryptoTaxTabState,
   DEFAULT_CRYPTO_TAX_STATE,
+  GoldTaxTabState,
+  DEFAULT_GOLD_TAX_STATE,
   MonthlyPlannerTabState,
   DEFAULT_MONTHLY_PLANNER_STATE,
   MortgageTabState,
@@ -138,7 +141,7 @@ const VALID_TABS: TabType[] = [
   'tax-treaty', 'couple-optimizer', 'pension', 'employer-cost', 'freelancer',
   'salary-compare', 'yearly', 'insurance', 'other-income', 'table', 'tax-history',
   'tax-calendar', 'salary-slip', 'exemption-checker', 'late-payment', 'business-form', 'severance',
-  'tax-document', 'content-creator', 'crypto-tax', 'tax-deadline', 'income-summary',
+  'tax-document', 'content-creator', 'crypto-tax', 'gold-tax', 'tax-deadline', 'income-summary',
   'region-compare', 'monthly-planner', 'mua-nha'
 ];
 
@@ -188,6 +191,7 @@ export default function Home() {
   const [coupleOptimizerState, setCoupleOptimizerState] = useState<CoupleOptimizerTabState>(DEFAULT_COUPLE_OPTIMIZER_STATE);
   const [contentCreatorState, setContentCreatorState] = useState<ContentCreatorTabState>(DEFAULT_CONTENT_CREATOR_STATE);
   const [cryptoTaxState, setCryptoTaxState] = useState<CryptoTaxTabState>(DEFAULT_CRYPTO_TAX_STATE);
+  const [goldTaxState, setGoldTaxState] = useState<GoldTaxTabState>(DEFAULT_GOLD_TAX_STATE);
   const [monthlyPlannerState, setMonthlyPlannerState] = useState<MonthlyPlannerTabState>(DEFAULT_MONTHLY_PLANNER_STATE);
   const [mortgageState, setMortgageState] = useState<MortgageTabState>(DEFAULT_MORTGAGE_STATE);
 
@@ -251,6 +255,9 @@ export default function Home() {
     }
     if (snapshot.tabs.cryptoTax) {
       setCryptoTaxState(snapshot.tabs.cryptoTax);
+    }
+    if (snapshot.tabs.goldTax) {
+      setGoldTaxState(snapshot.tabs.goldTax);
     }
     if (snapshot.tabs.monthlyPlanner) {
       setMonthlyPlannerState(snapshot.tabs.monthlyPlanner);
@@ -473,6 +480,7 @@ export default function Home() {
       coupleOptimizer: coupleOptimizerState,
       contentCreator: contentCreatorState,
       cryptoTax: cryptoTaxState,
+      goldTax: goldTaxState,
       monthlyPlanner: monthlyPlannerState,
       mortgage: mortgageState,
     },
@@ -969,6 +977,14 @@ export default function Home() {
           <div className="mb-8">
             <Suspense fallback={<TabLoadingSkeleton />}>
               <CryptoTax />
+            </Suspense>
+          </div>
+        )}
+
+        {activeTab === 'gold-tax' && (
+          <div className="mb-8">
+            <Suspense fallback={<TabLoadingSkeleton />}>
+              <GoldTaxCalculator />
             </Suspense>
           </div>
         )}

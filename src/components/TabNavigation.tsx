@@ -37,6 +37,7 @@ export type TabType =
   | 'couple-optimizer'
   | 'content-creator'
   | 'crypto-tax'
+  | 'gold-tax'
   | 'tax-deadline'
   | 'income-summary'
   | 'region-compare'
@@ -94,6 +95,7 @@ const TAB_DESCRIPTIONS: Record<TabType, string> = {
   'couple-optimizer': 'Tối ưu thuế vợ chồng',
   'content-creator': 'YouTuber, TikToker, Affiliate',
   'crypto-tax': 'Bitcoin, Ethereum, NFT',
+  'gold-tax': 'Thuế vàng miệng 0,1%',
   'tax-deadline': 'Quản lý deadline nộp thuế',
   'income-summary': 'Dashboard thu nhập năm',
   'region-compare': 'So sánh NET 4 vùng',
@@ -123,6 +125,7 @@ const TAB_GROUPS: TabGroup[] = [
       { id: 'multi-source-income', label: 'Đa nguồn thu nhập', icon: '📊', description: TAB_DESCRIPTIONS['multi-source-income'] },
       { id: 'content-creator', label: 'Content Creator', icon: '🎬', description: TAB_DESCRIPTIONS['content-creator'] },
       { id: 'crypto-tax', label: 'Crypto/NFT', icon: '₿', description: TAB_DESCRIPTIONS['crypto-tax'] },
+      { id: 'gold-tax', label: 'Thuế vàng miệng', icon: '🏆', description: TAB_DESCRIPTIONS['gold-tax'] },
       { id: 'income-summary', label: 'Tổng hợp thu nhập', icon: '📊', description: TAB_DESCRIPTIONS['income-summary'] },
       { id: 'real-estate', label: 'Chuyển nhượng BĐS', icon: '🏡', description: TAB_DESCRIPTIONS['real-estate'] },
       { id: 'pension', label: 'Dự tính lương hưu', icon: '🏖️', description: TAB_DESCRIPTIONS.pension },

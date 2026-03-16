@@ -215,6 +215,10 @@ export function saveNamedSave(
           ...snapshot.tabs.cryptoTax,
           transactions: snapshot.tabs.cryptoTax?.transactions?.map(t => ({ ...t })) || [],
         },
+        goldTax: {
+          ...snapshot.tabs.goldTax,
+          transactions: snapshot.tabs.goldTax?.transactions?.map(t => ({ ...t })) || [],
+        },
         monthlyPlanner: {
           ...snapshot.tabs.monthlyPlanner,
           months: snapshot.tabs.monthlyPlanner?.months?.map(m => ({ ...m })) || [],

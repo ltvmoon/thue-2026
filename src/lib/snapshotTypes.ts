@@ -164,6 +164,33 @@ export const DEFAULT_CRYPTO_TAX_STATE: CryptoTaxTabState = {
   taxYear: 2026,
 };
 
+// Gold Tax Tab State
+export type GoldTransactionSnapshotType = 'buy' | 'sell';
+export type GoldClassificationSnapshot = 'bar' | 'ring' | 'jewelry';
+export type GoldWeightUnitSnapshot = 'luong' | 'chi' | 'gram';
+
+export interface GoldTransactionSnapshot {
+  id: string;
+  date: string; // ISO string for serialization
+  type: GoldTransactionSnapshotType;
+  classification: GoldClassificationSnapshot;
+  goldTypeCode?: string;
+  goldTypeName: string;
+  weight: number;
+  weightUnit: GoldWeightUnitSnapshot;
+  pricePerLuong: number;
+  totalValue: number;
+  notes?: string;
+}
+
+export interface GoldTaxTabState {
+  transactions: GoldTransactionSnapshot[];
+}
+
+export const DEFAULT_GOLD_TAX_STATE: GoldTaxTabState = {
+  transactions: [],
+};
+
 // Monthly Planner Tab State
 export interface MonthlyPlannerTabState {
   baseSalary: number;
@@ -390,6 +417,7 @@ export interface TabStates {
   coupleOptimizer: CoupleOptimizerTabState;
   contentCreator: ContentCreatorTabState;
   cryptoTax: CryptoTaxTabState;
+  goldTax: GoldTaxTabState;
   monthlyPlanner: MonthlyPlannerTabState;
   mortgage: MortgageTabState;
 }
@@ -582,6 +610,7 @@ export const DEFAULT_TAB_STATES: TabStates = {
   coupleOptimizer: DEFAULT_COUPLE_OPTIMIZER_STATE,
   contentCreator: DEFAULT_CONTENT_CREATOR_STATE,
   cryptoTax: DEFAULT_CRYPTO_TAX_STATE,
+  goldTax: DEFAULT_GOLD_TAX_STATE,
   monthlyPlanner: DEFAULT_MONTHLY_PLANNER_STATE,
   mortgage: DEFAULT_MORTGAGE_STATE,
 };
@@ -739,6 +768,11 @@ export function createSnapshot(
         ...DEFAULT_CRYPTO_TAX_STATE,
         ...(tabStates?.cryptoTax || {}),
         transactions: tabStates?.cryptoTax?.transactions?.map(t => ({ ...t })) || [],
+      },
+      goldTax: {
+        ...DEFAULT_GOLD_TAX_STATE,
+        ...(tabStates?.goldTax || {}),
+        transactions: tabStates?.goldTax?.transactions?.map(t => ({ ...t })) || [],
       },
       monthlyPlanner: {
         ...DEFAULT_MONTHLY_PLANNER_STATE,
@@ -899,6 +933,11 @@ export function mergeSnapshotWithDefaults(
         ...DEFAULT_CRYPTO_TAX_STATE,
         ...(partial.tabs?.cryptoTax || {}),
         transactions: partial.tabs?.cryptoTax?.transactions?.map(t => ({ ...t })) || [],
+      },
+      goldTax: {
+        ...DEFAULT_GOLD_TAX_STATE,
+        ...(partial.tabs?.goldTax || {}),
+        transactions: partial.tabs?.goldTax?.transactions?.map(t => ({ ...t })) || [],
       },
       monthlyPlanner: {
         ...DEFAULT_MONTHLY_PLANNER_STATE,

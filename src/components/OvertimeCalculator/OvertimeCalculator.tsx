@@ -1,14 +1,18 @@
-'use client';
+"use client";
 
-import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
+import { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import {
   SharedTaxState,
   formatNumber,
   formatCurrency,
   DEFAULT_INSURANCE_OPTIONS,
   isCurrentlyIn2026,
-} from '@/lib/taxCalculator';
-import { CurrencyInputIssues, MAX_MONTHLY_INCOME, parseCurrencyInput } from '@/utils/inputSanitizers';
+} from "@/lib/taxCalculator";
+import {
+  CurrencyInputIssues,
+  MAX_MONTHLY_INCOME,
+  parseCurrencyInput,
+} from "@/utils/inputSanitizers";
 import {
   calculateOvertime,
   OvertimeEntry,
@@ -22,9 +26,9 @@ import {
   OVERTIME_RATES,
   DEFAULT_WORKING_DAYS,
   DEFAULT_HOURS_PER_DAY,
-} from '@/lib/overtimeCalculator';
-import { OvertimeTabState, DEFAULT_OVERTIME_STATE } from '@/lib/snapshotTypes';
-import Tooltip from '@/components/ui/Tooltip';
+} from "@/lib/overtimeCalculator";
+import { OvertimeTabState, DEFAULT_OVERTIME_STATE } from "@/lib/snapshotTypes";
+import Tooltip from "@/components/ui/Tooltip";
 
 interface OvertimeCalculatorProps {
   sharedState?: SharedTaxState;
@@ -43,21 +47,25 @@ export default function OvertimeCalculator({
 
   // Local state
   const [monthlySalary, setMonthlySalary] = useState(
-    tabState?.monthlySalary ?? sharedState?.grossIncome ?? 0
+    tabState?.monthlySalary ?? sharedState?.grossIncome ?? 0,
   );
   const [workingDays, setWorkingDays] = useState(
-    tabState?.workingDaysPerMonth ?? DEFAULT_WORKING_DAYS
+    tabState?.workingDaysPerMonth ?? DEFAULT_WORKING_DAYS,
   );
   const [hoursPerDay, setHoursPerDay] = useState(
-    tabState?.hoursPerDay ?? DEFAULT_HOURS_PER_DAY
+    tabState?.hoursPerDay ?? DEFAULT_HOURS_PER_DAY,
   );
-  const [entries, setEntries] = useState<OvertimeEntry[]>(tabState?.entries ?? []);
+  const [entries, setEntries] = useState<OvertimeEntry[]>(
+    tabState?.entries ?? [],
+  );
   const [includeHolidayBasePay, setIncludeHolidayBasePay] = useState(
-    tabState?.includeHolidayBasePay ?? true
+    tabState?.includeHolidayBasePay ?? true,
   );
   const [salaryWarning, setSalaryWarning] = useState<string | null>(null);
   // Auto-detect based on current date (if in 2026, default to new law)
-  const [useNewLaw, setUseNewLaw] = useState(() => tabState?.useNewLaw ?? isCurrentlyIn2026());
+  const [useNewLaw, setUseNewLaw] = useState(
+    () => tabState?.useNewLaw ?? isCurrentlyIn2026(),
+  );
 
   // Sync from shared state (grossIncome)
   useEffect(() => {
@@ -95,7 +103,15 @@ export default function OvertimeCalculator({
         ...updates,
       });
     },
-    [monthlySalary, workingDays, hoursPerDay, entries, includeHolidayBasePay, useNewLaw, onTabStateChange]
+    [
+      monthlySalary,
+      workingDays,
+      hoursPerDay,
+      entries,
+      includeHolidayBasePay,
+      useNewLaw,
+      onTabStateChange,
+    ],
   );
 
   // Handle salary change
@@ -110,27 +126,32 @@ export default function OvertimeCalculator({
     onStateChange?.({ grossIncome: numValue });
   };
 
-  const buildWarning = (issues: CurrencyInputIssues, max?: number): string | null => {
+  const buildWarning = (
+    issues: CurrencyInputIssues,
+    max?: number,
+  ): string | null => {
     const messages: string[] = [];
     if (issues.negative) {
-      messages.push('Không hỗ trợ số âm.');
+      messages.push("Không hỗ trợ số âm.");
     }
     if (issues.decimal) {
-      messages.push('Không hỗ trợ số thập phân, đã bỏ phần lẻ.');
+      messages.push("Không hỗ trợ số thập phân, đã bỏ phần lẻ.");
     }
     if (issues.overflow && max) {
-      messages.push(`Giá trị quá lớn, giới hạn tối đa ${formatNumber(max)} VNĐ.`);
+      messages.push(
+        `Giá trị quá lớn, giới hạn tối đa ${formatNumber(max)} VNĐ.`,
+      );
     }
-    return messages.length ? messages.join(' ') : null;
+    return messages.length ? messages.join(" ") : null;
   };
 
   // Add new overtime entry
-  const addEntry = (type: OvertimeType, shift: ShiftType = 'day') => {
+  const addEntry = (type: OvertimeType, shift: ShiftType = "day") => {
     const newEntry: OvertimeEntry = {
       id: generateEntryId(),
       type,
       shift,
-      hours: type === 'weekday' ? 2 : 8,
+      hours: type === "weekday" ? 2 : 8,
     };
     const newEntries = [...entries, newEntry];
     setEntries(newEntries);
@@ -140,7 +161,7 @@ export default function OvertimeCalculator({
   // Update entry
   const updateEntry = (id: string, updates: Partial<OvertimeEntry>) => {
     const newEntries = entries.map((e) =>
-      e.id === id ? { ...e, ...updates } : e
+      e.id === id ? { ...e, ...updates } : e,
     );
     setEntries(newEntries);
     updateTabState({ entries: newEntries });
@@ -166,7 +187,8 @@ export default function OvertimeCalculator({
       dependents: sharedState?.dependents ?? 0,
       otherDeductions: sharedState?.otherDeductions ?? 0,
       hasInsurance: sharedState?.hasInsurance ?? true,
-      insuranceOptions: sharedState?.insuranceOptions ?? DEFAULT_INSURANCE_OPTIONS,
+      insuranceOptions:
+        sharedState?.insuranceOptions ?? DEFAULT_INSURANCE_OPTIONS,
       region: sharedState?.region ?? 1,
       useNewLaw,
     });
@@ -180,7 +202,11 @@ export default function OvertimeCalculator({
     useNewLaw,
   ]);
 
-  const hourlyRate = calculateHourlyRate(monthlySalary, workingDays, hoursPerDay);
+  const hourlyRate = calculateHourlyRate(
+    monthlySalary,
+    workingDays,
+    hoursPerDay,
+  );
 
   return (
     <div className="card">
@@ -189,8 +215,12 @@ export default function OvertimeCalculator({
           <span className="text-2xl">⏰</span>
         </div>
         <div className="flex-1">
-          <h2 className="text-xl font-bold text-gray-900">Tính lương tăng ca</h2>
-          <p className="text-sm text-gray-500">Tính thu nhập và thuế từ làm thêm giờ</p>
+          <h2 className="text-xl font-bold text-gray-900">
+            Tính lương tăng ca
+          </h2>
+          <p className="text-sm text-gray-500">
+            Tính thu nhập và thuế từ làm thêm giờ
+          </p>
         </div>
         <div className="flex items-center gap-2">
           <span className="text-sm text-gray-600">Luật thuế:</span>
@@ -199,13 +229,13 @@ export default function OvertimeCalculator({
               setUseNewLaw(!useNewLaw);
               updateTabState({ useNewLaw: !useNewLaw });
             }}
-            className={`px-3 py-1 text-sm font-medium rounded-lg transition-colors ${
+            className={`px-3 py-1 min-h-[44px] text-sm font-medium rounded-lg transition-colors ${
               useNewLaw
-                ? 'bg-primary-100 text-primary-700'
-                : 'bg-gray-100 text-gray-600'
+                ? "bg-primary-100 text-primary-700"
+                : "bg-gray-100 text-gray-600"
             }`}
           >
-            {useNewLaw ? 'Mới 2026' : 'Hiện hành'}
+            {useNewLaw ? "Mới 2026" : "Hiện hành"}
           </button>
         </div>
       </div>
@@ -213,8 +243,18 @@ export default function OvertimeCalculator({
       {/* Sync indicator */}
       {sharedState && (
         <div className="mb-4 px-3 py-2 bg-blue-50 border border-blue-200 rounded-lg text-sm text-blue-700 flex items-center gap-2">
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+          <svg
+            className="w-4 h-4"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M13 10V3L4 14h7v7l9-11h-7z"
+            />
           </svg>
           Số người phụ thuộc và bảo hiểm được đồng bộ từ các tab khác
         </div>
@@ -228,9 +268,19 @@ export default function OvertimeCalculator({
             <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-1">
               Lương cơ bản/tháng
               <Tooltip content="Lương tháng dùng để tính lương giờ cơ bản">
-                <span className="text-gray-500 hover:text-gray-700 cursor-help">
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                <span className="inline-flex items-center justify-center w-[44px] h-[44px] -m-3 text-gray-500 hover:text-gray-700 cursor-help rounded-full hover:bg-gray-100 transition-colors">
+                  <svg
+                    className="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
                   </svg>
                 </span>
               </Tooltip>
@@ -238,7 +288,7 @@ export default function OvertimeCalculator({
             <div className="relative">
               <input
                 type="text"
-                value={monthlySalary > 0 ? formatNumber(monthlySalary) : ''}
+                value={monthlySalary > 0 ? formatNumber(monthlySalary) : ""}
                 onChange={(e) => handleSalaryChange(e.target.value)}
                 placeholder="0"
                 className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
@@ -263,9 +313,19 @@ export default function OvertimeCalculator({
               <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-1">
                 Số ngày làm việc/tháng
                 <Tooltip content="Thường là 22-26 ngày tùy theo công ty">
-                  <span className="text-gray-500 hover:text-gray-700 cursor-help">
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  <span className="inline-flex items-center justify-center w-[44px] h-[44px] -m-3 text-gray-500 hover:text-gray-700 cursor-help rounded-full hover:bg-gray-100 transition-colors">
+                    <svg
+                      className="w-4 h-4"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                      />
                     </svg>
                   </span>
                 </Tooltip>
@@ -287,9 +347,19 @@ export default function OvertimeCalculator({
               <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-1">
                 Số giờ làm việc/ngày
                 <Tooltip content="Thường là 8 giờ theo quy định">
-                  <span className="text-gray-500 hover:text-gray-700 cursor-help">
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  <span className="inline-flex items-center justify-center w-[44px] h-[44px] -m-3 text-gray-500 hover:text-gray-700 cursor-help rounded-full hover:bg-gray-100 transition-colors">
+                    <svg
+                      className="w-4 h-4"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                      />
                     </svg>
                   </span>
                 </Tooltip>
@@ -298,7 +368,8 @@ export default function OvertimeCalculator({
                 type="number"
                 value={hoursPerDay}
                 onChange={(e) => {
-                  const val = parseFloat(e.target.value) || DEFAULT_HOURS_PER_DAY;
+                  const val =
+                    parseFloat(e.target.value) || DEFAULT_HOURS_PER_DAY;
                   setHoursPerDay(val);
                   updateTabState({ hoursPerDay: val });
                 }}
@@ -318,24 +389,24 @@ export default function OvertimeCalculator({
             <div className="flex flex-wrap gap-2">
               <Tooltip content="Tăng ca ngoài giờ hành chính (150% lương giờ)">
                 <button
-                  onClick={() => addEntry('weekday', 'day')}
-                  className="px-3 py-2.5 sm:py-1.5 text-sm bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 transition-colors"
+                  onClick={() => addEntry("weekday", "day")}
+                  className="px-3 py-2.5 sm:py-1.5 min-h-[44px] text-sm bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 transition-colors"
                 >
                   + Ngày thường
                 </button>
               </Tooltip>
               <Tooltip content="Làm việc thứ 7, Chủ nhật (200% lương giờ)">
                 <button
-                  onClick={() => addEntry('weekend', 'day')}
-                  className="px-3 py-2.5 sm:py-1.5 text-sm bg-orange-50 text-orange-700 rounded-lg hover:bg-orange-100 transition-colors"
+                  onClick={() => addEntry("weekend", "day")}
+                  className="px-3 py-2.5 sm:py-1.5 min-h-[44px] text-sm bg-orange-50 text-orange-700 rounded-lg hover:bg-orange-100 transition-colors"
                 >
                   + Cuối tuần
                 </button>
               </Tooltip>
               <Tooltip content="Làm việc ngày lễ, tết (300% lương giờ + lương ngày nếu được chọn)">
                 <button
-                  onClick={() => addEntry('holiday', 'day')}
-                  className="px-3 py-2.5 sm:py-1.5 text-sm bg-red-50 text-red-700 rounded-lg hover:bg-red-100 transition-colors"
+                  onClick={() => addEntry("holiday", "day")}
+                  className="px-3 py-2.5 sm:py-1.5 min-h-[44px] text-sm bg-red-50 text-red-700 rounded-lg hover:bg-red-100 transition-colors"
                 >
                   + Ngày lễ
                 </button>
@@ -364,7 +435,12 @@ export default function OvertimeCalculator({
           {entries.length === 0 && (
             <div className="text-center py-12 text-gray-500 bg-gray-50 rounded-lg">
               <div className="w-16 h-16 mx-auto mb-4 text-gray-300">
-                <svg className="w-full h-full" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg
+                  className="w-full h-full"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -373,13 +449,15 @@ export default function OvertimeCalculator({
                   />
                 </svg>
               </div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">Chưa có lịch tăng ca</h3>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                Chưa có lịch tăng ca
+              </h3>
               <p className="text-gray-500">Thêm ca làm thêm để tính thu nhập</p>
             </div>
           )}
 
           {/* Holiday base pay option */}
-          {entries.some((e) => e.type === 'holiday') && (
+          {entries.some((e) => e.type === "holiday") && (
             <label className="flex items-center gap-2 text-sm">
               <input
                 type="checkbox"
@@ -393,9 +471,19 @@ export default function OvertimeCalculator({
               <span className="text-gray-700 flex items-center gap-2">
                 Bao gồm lương ngày lễ
                 <Tooltip content="Ngày lễ được nghỉ có lương, nếu đi làm thêm được 300% + 100% = 400%">
-                  <span className="text-gray-500 hover:text-gray-700 cursor-help">
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  <span className="inline-flex items-center justify-center w-[44px] h-[44px] -m-3 text-gray-500 hover:text-gray-700 cursor-help rounded-full hover:bg-gray-100 transition-colors">
+                    <svg
+                      className="w-4 h-4"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                      />
                     </svg>
                   </span>
                 </Tooltip>
@@ -428,7 +516,9 @@ export default function OvertimeCalculator({
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
                     <span className="text-gray-600">Lương cơ bản</span>
-                    <span className="font-medium">{formatCurrency(result.regularMonthlyPay)}</span>
+                    <span className="font-medium">
+                      {formatCurrency(result.regularMonthlyPay)}
+                    </span>
                   </div>
 
                   {result.totalOvertimeGross > 0 && (
@@ -450,7 +540,9 @@ export default function OvertimeCalculator({
                         </div>
                         <div className="flex justify-between">
                           <span>- Phần chịu thuế</span>
-                          <span>{formatCurrency(result.totalTaxableOvertime)}</span>
+                          <span>
+                            {formatCurrency(result.totalTaxableOvertime)}
+                          </span>
                         </div>
                       </div>
                     </>
@@ -458,7 +550,9 @@ export default function OvertimeCalculator({
 
                   {result.holidayBasePay > 0 && (
                     <div className="flex justify-between">
-                      <span className="text-gray-600">Lương ngày lễ ({result.holidayHours}h)</span>
+                      <span className="text-gray-600">
+                        Lương ngày lễ ({result.holidayHours}h)
+                      </span>
                       <span className="font-medium text-orange-600">
                         +{formatCurrency(result.holidayBasePay)}
                       </span>
@@ -468,18 +562,24 @@ export default function OvertimeCalculator({
                   <div className="border-t pt-2 mt-2">
                     <div className="flex justify-between">
                       <span className="text-gray-600">Bảo hiểm (10.5%)</span>
-                      <span className="text-red-600">-{formatCurrency(result.insuranceAmount)}</span>
+                      <span className="text-red-600">
+                        -{formatCurrency(result.insuranceAmount)}
+                      </span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-600">Thuế TNCN</span>
-                      <span className="text-red-600">-{formatCurrency(result.taxAmount)}</span>
+                      <span className="text-red-600">
+                        -{formatCurrency(result.taxAmount)}
+                      </span>
                     </div>
                   </div>
 
                   <div className="border-t pt-2 mt-2">
                     <div className="flex justify-between text-lg font-bold">
                       <span className="text-gray-800">Thực nhận</span>
-                      <span className="text-green-600">{formatCurrency(result.netIncome)}</span>
+                      <span className="text-green-600">
+                        {formatCurrency(result.netIncome)}
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -530,7 +630,8 @@ export default function OvertimeCalculator({
                     </svg>
                     <div className="text-sm text-green-800">
                       <p className="font-medium">
-                        {result.taxExemptPercentage.toFixed(1)}% lương tăng ca được miễn thuế
+                        {result.taxExemptPercentage.toFixed(1)}% lương tăng ca
+                        được miễn thuế
                       </p>
                       <p className="text-xs mt-1 opacity-75">
                         Theo Thông tư 111/2013/TT-BTC
@@ -563,7 +664,9 @@ export default function OvertimeCalculator({
 
       {/* Rate reference table */}
       <div className="mt-6 bg-gray-50 border border-gray-200 rounded-lg p-4">
-        <h4 className="font-medium text-gray-800 mb-3">Bảng hệ số tăng ca (Điều 98, BLLĐ 2019)</h4>
+        <h4 className="font-medium text-gray-800 mb-3">
+          Bảng hệ số tăng ca (Điều 98, BLLĐ 2019)
+        </h4>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
@@ -608,14 +711,19 @@ interface OvertimeEntryCardProps {
   onRemove: () => void;
 }
 
-function OvertimeEntryCard({ entry, hourlyRate, onUpdate, onRemove }: OvertimeEntryCardProps) {
+function OvertimeEntryCard({
+  entry,
+  hourlyRate,
+  onUpdate,
+  onRemove,
+}: OvertimeEntryCardProps) {
   const rate = getOvertimeRate(entry.type, entry.shift);
   const amount = hourlyRate * rate * entry.hours;
 
   const typeColors: Record<OvertimeType, string> = {
-    weekday: 'border-blue-200 bg-blue-50',
-    weekend: 'border-orange-200 bg-orange-50',
-    holiday: 'border-red-200 bg-red-50',
+    weekday: "border-blue-200 bg-blue-50",
+    weekend: "border-orange-200 bg-orange-50",
+    holiday: "border-red-200 bg-red-50",
   };
 
   return (
@@ -623,7 +731,9 @@ function OvertimeEntryCard({ entry, hourlyRate, onUpdate, onRemove }: OvertimeEn
       <div className="flex items-start justify-between gap-2">
         <div className="flex-1">
           <div className="flex items-center gap-2 mb-2">
-            <span className="font-medium text-sm">{getOvertimeTypeLabel(entry.type)}</span>
+            <span className="font-medium text-sm">
+              {getOvertimeTypeLabel(entry.type)}
+            </span>
             <span className="text-xs px-2 py-0.5 bg-white rounded-full">
               {(rate * 100).toFixed(0)}%
             </span>
@@ -633,21 +743,21 @@ function OvertimeEntryCard({ entry, hourlyRate, onUpdate, onRemove }: OvertimeEn
             {/* Shift toggle */}
             <div className="flex items-center gap-1 text-xs">
               <button
-                onClick={() => onUpdate({ shift: 'day' })}
+                onClick={() => onUpdate({ shift: "day" })}
                 className={`px-2 py-1 rounded ${
-                  entry.shift === 'day'
-                    ? 'bg-white shadow-sm font-medium'
-                    : 'text-gray-500 hover:bg-white/50'
+                  entry.shift === "day"
+                    ? "bg-white shadow-sm font-medium"
+                    : "text-gray-500 hover:bg-white/50"
                 }`}
               >
                 Ca ngày
               </button>
               <button
-                onClick={() => onUpdate({ shift: 'night' })}
+                onClick={() => onUpdate({ shift: "night" })}
                 className={`px-2 py-1 rounded ${
-                  entry.shift === 'night'
-                    ? 'bg-white shadow-sm font-medium'
-                    : 'text-gray-500 hover:bg-white/50'
+                  entry.shift === "night"
+                    ? "bg-white shadow-sm font-medium"
+                    : "text-gray-500 hover:bg-white/50"
                 }`}
               >
                 Ca đêm
@@ -659,7 +769,11 @@ function OvertimeEntryCard({ entry, hourlyRate, onUpdate, onRemove }: OvertimeEn
               <input
                 type="number"
                 value={entry.hours}
-                onChange={(e) => onUpdate({ hours: Math.max(0.5, parseFloat(e.target.value) || 0) })}
+                onChange={(e) =>
+                  onUpdate({
+                    hours: Math.max(0.5, parseFloat(e.target.value) || 0),
+                  })
+                }
                 min={0.5}
                 max={12}
                 step={0.5}

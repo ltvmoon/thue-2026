@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
+import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import {
   SharedTaxState,
   formatNumber,
@@ -8,8 +8,12 @@ import {
   DEFAULT_INSURANCE_OPTIONS,
   RegionType,
   InsuranceOptions,
-} from '@/lib/taxCalculator';
-import { CurrencyInputIssues, MAX_MONTHLY_INCOME, parseCurrencyInput } from '@/utils/inputSanitizers';
+} from "@/lib/taxCalculator";
+import {
+  CurrencyInputIssues,
+  MAX_MONTHLY_INCOME,
+  parseCurrencyInput,
+} from "@/utils/inputSanitizers";
 import {
   SettlementYear,
   MonthlyIncomeEntry,
@@ -20,13 +24,13 @@ import {
   generateDependentId,
   estimateMonthlyTax,
   getLawForMonth,
-} from '@/lib/annualSettlementCalculator';
+} from "@/lib/annualSettlementCalculator";
 import {
   AnnualSettlementTabState,
   DEFAULT_ANNUAL_SETTLEMENT_STATE,
-} from '@/lib/snapshotTypes';
-import { getInsuranceDetailed } from '@/lib/taxCalculator';
-import Tooltip from '@/components/ui/Tooltip';
+} from "@/lib/snapshotTypes";
+import { getInsuranceDetailed } from "@/lib/taxCalculator";
+import Tooltip from "@/components/ui/Tooltip";
 
 interface AnnualSettlementProps {
   sharedState?: SharedTaxState;
@@ -36,22 +40,51 @@ interface AnnualSettlementProps {
 }
 
 const MONTH_NAMES = [
-  'T1', 'T2', 'T3', 'T4', 'T5', 'T6',
-  'T7', 'T8', 'T9', 'T10', 'T11', 'T12',
+  "T1",
+  "T2",
+  "T3",
+  "T4",
+  "T5",
+  "T6",
+  "T7",
+  "T8",
+  "T9",
+  "T10",
+  "T11",
+  "T12",
 ];
 
 const FULL_MONTH_NAMES = [
-  'Tháng 1', 'Tháng 2', 'Tháng 3', 'Tháng 4',
-  'Tháng 5', 'Tháng 6', 'Tháng 7', 'Tháng 8',
-  'Tháng 9', 'Tháng 10', 'Tháng 11', 'Tháng 12',
+  "Tháng 1",
+  "Tháng 2",
+  "Tháng 3",
+  "Tháng 4",
+  "Tháng 5",
+  "Tháng 6",
+  "Tháng 7",
+  "Tháng 8",
+  "Tháng 9",
+  "Tháng 10",
+  "Tháng 11",
+  "Tháng 12",
 ];
 
 // Info icon component for tooltips
 function InfoIcon() {
   return (
-    <span className="text-gray-500 hover:text-gray-700 cursor-help">
-      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+    <span className="inline-flex items-center justify-center w-[44px] h-[44px] -m-3 text-gray-500 hover:text-gray-700 cursor-help rounded-full hover:bg-gray-100 transition-colors">
+      <svg
+        className="w-4 h-4"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+        />
       </svg>
     </span>
   );
@@ -67,26 +100,38 @@ export default function AnnualSettlement({
 
   // Local state
   const [year, setYear] = useState<SettlementYear>(tabState?.year ?? 2025);
-  const [useAverageSalary, setUseAverageSalary] = useState(tabState?.useAverageSalary ?? true);
+  const [useAverageSalary, setUseAverageSalary] = useState(
+    tabState?.useAverageSalary ?? true,
+  );
   const [averageSalary, setAverageSalary] = useState(
-    tabState?.averageSalary ?? sharedState?.grossIncome ?? 0
+    tabState?.averageSalary ?? sharedState?.grossIncome ?? 0,
   );
   const [monthlyIncome, setMonthlyIncome] = useState<MonthlyIncomeEntry[]>(
-    tabState?.monthlyIncome ?? createDefaultMonthlyIncome(0, 0, 0)
+    tabState?.monthlyIncome ?? createDefaultMonthlyIncome(0, 0, 0),
   );
-  const [dependents, setDependents] = useState<DependentInfo[]>(tabState?.dependents ?? []);
+  const [dependents, setDependents] = useState<DependentInfo[]>(
+    tabState?.dependents ?? [],
+  );
   const [charitableContributions, setCharitableContributions] = useState(
-    tabState?.charitableContributions ?? 0
+    tabState?.charitableContributions ?? 0,
   );
-  const [voluntaryPension, setVoluntaryPension] = useState(tabState?.voluntaryPension ?? 0);
+  const [voluntaryPension, setVoluntaryPension] = useState(
+    tabState?.voluntaryPension ?? 0,
+  );
   const [insuranceOptions, setInsuranceOptions] = useState<InsuranceOptions>(
-    tabState?.insuranceOptions ?? sharedState?.insuranceOptions ?? DEFAULT_INSURANCE_OPTIONS
+    tabState?.insuranceOptions ??
+      sharedState?.insuranceOptions ??
+      DEFAULT_INSURANCE_OPTIONS,
   );
   const [region, setRegion] = useState<RegionType>(
-    tabState?.region ?? sharedState?.region ?? 1
+    tabState?.region ?? sharedState?.region ?? 1,
   );
-  const [manualTaxPaidMode, setManualTaxPaidMode] = useState(tabState?.manualTaxPaidMode ?? false);
-  const [manualTaxPaid, setManualTaxPaid] = useState(tabState?.manualTaxPaid ?? 0);
+  const [manualTaxPaidMode, setManualTaxPaidMode] = useState(
+    tabState?.manualTaxPaidMode ?? false,
+  );
+  const [manualTaxPaid, setManualTaxPaid] = useState(
+    tabState?.manualTaxPaid ?? 0,
+  );
   const [showMonthlyDetails, setShowMonthlyDetails] = useState(false);
   const [inputWarning, setInputWarning] = useState<string | null>(null);
 
@@ -149,40 +194,73 @@ export default function AnnualSettlement({
         ...updates,
       });
     },
-    [year, useAverageSalary, averageSalary, monthlyIncome, dependents,
-      charitableContributions, voluntaryPension, insuranceOptions, region,
-      manualTaxPaidMode, manualTaxPaid, onTabStateChange]
+    [
+      year,
+      useAverageSalary,
+      averageSalary,
+      monthlyIncome,
+      dependents,
+      charitableContributions,
+      voluntaryPension,
+      insuranceOptions,
+      region,
+      manualTaxPaidMode,
+      manualTaxPaid,
+      onTabStateChange,
+    ],
   );
 
   // Helper function to count dependents for a specific month
-  const getDependentCountForMonth = useCallback((month: number): number => {
-    return dependents.filter(d => d.fromMonth <= month && d.toMonth >= month).length;
-  }, [dependents]);
+  const getDependentCountForMonth = useCallback(
+    (month: number): number => {
+      return dependents.filter(
+        (d) => d.fromMonth <= month && d.toMonth >= month,
+      ).length;
+    },
+    [dependents],
+  );
 
   // When averageSalary changes, update monthly income
   useEffect(() => {
     if (useAverageSalary && averageSalary > 0) {
       const newMonthlyIncome = createDefaultMonthlyIncome(averageSalary, 0, 0);
-      newMonthlyIncome.forEach(entry => {
+      newMonthlyIncome.forEach((entry) => {
         // Calculate estimated tax for each month (date-aware for insurance caps)
         const insurance = getInsuranceDetailed(
           entry.grossSalary,
           region,
           insuranceOptions,
-          new Date(year, entry.month - 1, 1)
+          new Date(year, entry.month - 1, 1),
         );
         const law = getLawForMonth(year, entry.month);
         const dependentCountForMonth = getDependentCountForMonth(entry.month);
-        const taxableForMonth = entry.grossSalary + entry.bonus - entry.taxExempt;
-        entry.taxPaid = estimateMonthlyTax(taxableForMonth, dependentCountForMonth, insurance.total, law);
+        const taxableForMonth =
+          entry.grossSalary + entry.bonus - entry.taxExempt;
+        entry.taxPaid = estimateMonthlyTax(
+          taxableForMonth,
+          dependentCountForMonth,
+          insurance.total,
+          law,
+        );
       });
       setMonthlyIncome(newMonthlyIncome);
     }
-  }, [useAverageSalary, averageSalary, year, region, insuranceOptions, dependents, getDependentCountForMonth]);
+  }, [
+    useAverageSalary,
+    averageSalary,
+    year,
+    region,
+    insuranceOptions,
+    dependents,
+    getDependentCountForMonth,
+  ]);
 
   // Calculate result
   const result = useMemo<AnnualSettlementResult | null>(() => {
-    const totalIncome = monthlyIncome.reduce((sum, m) => sum + m.grossSalary, 0);
+    const totalIncome = monthlyIncome.reduce(
+      (sum, m) => sum + m.grossSalary,
+      0,
+    );
     if (totalIncome <= 0) return null;
 
     return calculateAnnualSettlement({
@@ -195,8 +273,17 @@ export default function AnnualSettlement({
       region,
       manualTaxPaid: manualTaxPaidMode ? manualTaxPaid : undefined,
     });
-  }, [year, monthlyIncome, dependents, charitableContributions, voluntaryPension,
-    insuranceOptions, region, manualTaxPaidMode, manualTaxPaid]);
+  }, [
+    year,
+    monthlyIncome,
+    dependents,
+    charitableContributions,
+    voluntaryPension,
+    insuranceOptions,
+    region,
+    manualTaxPaidMode,
+    manualTaxPaid,
+  ]);
 
   // Handle year change
   const handleYearChange = (newYear: SettlementYear) => {
@@ -204,18 +291,23 @@ export default function AnnualSettlement({
     updateTabState({ year: newYear });
   };
 
-  const buildWarning = (issues: CurrencyInputIssues, max?: number): string | null => {
+  const buildWarning = (
+    issues: CurrencyInputIssues,
+    max?: number,
+  ): string | null => {
     const messages: string[] = [];
     if (issues.negative) {
-      messages.push('Không hỗ trợ số âm.');
+      messages.push("Không hỗ trợ số âm.");
     }
     if (issues.decimal) {
-      messages.push('Không hỗ trợ số thập phân, đã bỏ phần lẻ.');
+      messages.push("Không hỗ trợ số thập phân, đã bỏ phần lẻ.");
     }
     if (issues.overflow && max) {
-      messages.push(`Giá trị quá lớn, giới hạn tối đa ${formatNumber(max)} VNĐ.`);
+      messages.push(
+        `Giá trị quá lớn, giới hạn tối đa ${formatNumber(max)} VNĐ.`,
+      );
     }
-    return messages.length ? messages.join(' ') : null;
+    return messages.length ? messages.join(" ") : null;
   };
 
   const parseCurrencyWithWarning = (raw: string, max: number) => {
@@ -234,9 +326,13 @@ export default function AnnualSettlement({
   };
 
   // Handle monthly income change
-  const handleMonthlyIncomeChange = (month: number, field: keyof MonthlyIncomeEntry, value: number) => {
-    const newMonthlyIncome = monthlyIncome.map(entry =>
-      entry.month === month ? { ...entry, [field]: value } : entry
+  const handleMonthlyIncomeChange = (
+    month: number,
+    field: keyof MonthlyIncomeEntry,
+    value: number,
+  ) => {
+    const newMonthlyIncome = monthlyIncome.map((entry) =>
+      entry.month === month ? { ...entry, [field]: value } : entry,
     );
     setMonthlyIncome(newMonthlyIncome);
     updateTabState({ monthlyIncome: newMonthlyIncome });
@@ -257,8 +353,8 @@ export default function AnnualSettlement({
 
   // Update dependent
   const updateDependent = (id: string, updates: Partial<DependentInfo>) => {
-    const newDependents = dependents.map(d =>
-      d.id === id ? { ...d, ...updates } : d
+    const newDependents = dependents.map((d) =>
+      d.id === id ? { ...d, ...updates } : d,
     );
     setDependents(newDependents);
     updateTabState({ dependents: newDependents });
@@ -266,7 +362,7 @@ export default function AnnualSettlement({
 
   // Remove dependent
   const removeDependent = (id: string) => {
-    const newDependents = dependents.filter(d => d.id !== id);
+    const newDependents = dependents.filter((d) => d.id !== id);
     setDependents(newDependents);
     updateTabState({ dependents: newDependents });
   };
@@ -281,8 +377,12 @@ export default function AnnualSettlement({
               <span className="text-xl sm:text-2xl">📊</span>
             </div>
             <div className="flex-1 min-w-0">
-              <h2 className="text-lg sm:text-xl font-bold text-gray-900">Quyết toán thuế năm</h2>
-              <p className="text-xs sm:text-sm text-gray-500">Tính thuế phải nộp hoặc được hoàn khi quyết toán</p>
+              <h2 className="text-lg sm:text-xl font-bold text-gray-900">
+                Quyết toán thuế năm
+              </h2>
+              <p className="text-xs sm:text-sm text-gray-500">
+                Tính thuế phải nộp hoặc được hoàn khi quyết toán
+              </p>
             </div>
           </div>
           {/* Year selector */}
@@ -293,20 +393,20 @@ export default function AnnualSettlement({
             <div className="flex gap-2">
               <button
                 onClick={() => handleYearChange(2025)}
-                className={`px-3 sm:px-4 py-2.5 sm:py-2 rounded-lg font-medium text-sm sm:text-base transition-all ${
+                className={`px-3 sm:px-4 py-2.5 sm:py-2 min-h-[44px] rounded-lg font-medium text-sm sm:text-base transition-all ${
                   year === 2025
-                    ? 'bg-primary-600 text-white'
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    ? "bg-primary-600 text-white"
+                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                 }`}
               >
                 2025
               </button>
               <button
                 onClick={() => handleYearChange(2026)}
-                className={`px-3 sm:px-4 py-2.5 sm:py-2 rounded-lg font-medium text-sm sm:text-base transition-all ${
+                className={`px-3 sm:px-4 py-2.5 sm:py-2 min-h-[44px] rounded-lg font-medium text-sm sm:text-base transition-all ${
                   year === 2026
-                    ? 'bg-primary-600 text-white'
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    ? "bg-primary-600 text-white"
+                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                 }`}
               >
                 2026
@@ -321,8 +421,9 @@ export default function AnnualSettlement({
             <div className="flex items-start gap-2">
               <span className="text-green-600">&#10003;</span>
               <div className="text-green-800">
-                <strong>Năm 2026:</strong> Áp dụng luật mới từ 01/01/2026 với giảm trừ bản thân 15,5 triệu/tháng,
-                giảm trừ người phụ thuộc 6,2 triệu/tháng và biểu thuế 5 bậc.
+                <strong>Năm 2026:</strong> Áp dụng luật mới từ 01/01/2026 với
+                giảm trừ bản thân 15,5 triệu/tháng, giảm trừ người phụ thuộc 6,2
+                triệu/tháng và biểu thuế 5 bậc.
               </div>
             </div>
           </div>
@@ -340,7 +441,9 @@ export default function AnnualSettlement({
           )}
           {/* Income input */}
           <div className="card">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4">Thu nhập</h3>
+            <h3 className="text-lg font-semibold text-gray-800 mb-4">
+              Thu nhập
+            </h3>
 
             {/* Input mode toggle */}
             <div className="flex gap-4 mb-4">
@@ -402,13 +505,27 @@ export default function AnnualSettlement({
                   </thead>
                   <tbody>
                     {monthlyIncome.map((entry) => (
-                      <tr key={entry.month} className="border-t border-gray-100">
-                        <td className="py-2 pr-2 font-medium">{MONTH_NAMES[entry.month - 1]}</td>
+                      <tr
+                        key={entry.month}
+                        className="border-t border-gray-100"
+                      >
+                        <td className="py-2 pr-2 font-medium">
+                          {MONTH_NAMES[entry.month - 1]}
+                        </td>
                         <td className="py-2 px-2">
                           <input
                             type="text"
                             value={formatNumber(entry.grossSalary)}
-                            onChange={(e) => handleMonthlyIncomeChange(entry.month, 'grossSalary', parseCurrencyWithWarning(e.target.value, MAX_MONTHLY_INCOME))}
+                            onChange={(e) =>
+                              handleMonthlyIncomeChange(
+                                entry.month,
+                                "grossSalary",
+                                parseCurrencyWithWarning(
+                                  e.target.value,
+                                  MAX_MONTHLY_INCOME,
+                                ),
+                              )
+                            }
                             className="w-full px-2 py-1 border border-gray-200 rounded text-right"
                           />
                         </td>
@@ -416,7 +533,16 @@ export default function AnnualSettlement({
                           <input
                             type="text"
                             value={formatNumber(entry.bonus)}
-                            onChange={(e) => handleMonthlyIncomeChange(entry.month, 'bonus', parseCurrencyWithWarning(e.target.value, MAX_MONTHLY_INCOME))}
+                            onChange={(e) =>
+                              handleMonthlyIncomeChange(
+                                entry.month,
+                                "bonus",
+                                parseCurrencyWithWarning(
+                                  e.target.value,
+                                  MAX_MONTHLY_INCOME,
+                                ),
+                              )
+                            }
                             className="w-full px-2 py-1 border border-gray-200 rounded text-right"
                           />
                         </td>
@@ -424,7 +550,16 @@ export default function AnnualSettlement({
                           <input
                             type="text"
                             value={formatNumber(entry.taxPaid)}
-                            onChange={(e) => handleMonthlyIncomeChange(entry.month, 'taxPaid', parseCurrencyWithWarning(e.target.value, MAX_MONTHLY_INCOME))}
+                            onChange={(e) =>
+                              handleMonthlyIncomeChange(
+                                entry.month,
+                                "taxPaid",
+                                parseCurrencyWithWarning(
+                                  e.target.value,
+                                  MAX_MONTHLY_INCOME,
+                                ),
+                              )
+                            }
                             className="w-full px-2 py-1 border border-gray-200 rounded text-right"
                           />
                         </td>
@@ -440,30 +575,39 @@ export default function AnnualSettlement({
           <div className="card">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
-                <h3 className="text-lg font-semibold text-gray-800">Người phụ thuộc</h3>
+                <h3 className="text-lg font-semibold text-gray-800">
+                  Người phụ thuộc
+                </h3>
                 <Tooltip content="NPT có thể được giảm trừ theo từng tháng đăng ký">
                   <InfoIcon />
                 </Tooltip>
               </div>
               <button
                 onClick={addDependent}
-                className="px-3 py-2.5 sm:py-1.5 text-sm bg-primary-100 text-primary-700 rounded-lg hover:bg-primary-200 transition-colors"
+                className="px-3 py-2.5 sm:py-1.5 min-h-[44px] text-sm bg-primary-100 text-primary-700 rounded-lg hover:bg-primary-200 transition-colors"
               >
                 + Thêm NPT
               </button>
             </div>
 
             {dependents.length === 0 ? (
-              <p className="text-sm text-gray-500 italic">Chưa có người phụ thuộc</p>
+              <p className="text-sm text-gray-500 italic">
+                Chưa có người phụ thuộc
+              </p>
             ) : (
               <div className="space-y-3">
                 {dependents.map((dep) => (
-                  <div key={dep.id} className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 p-3 bg-gray-50 rounded-lg">
+                  <div
+                    key={dep.id}
+                    className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 p-3 bg-gray-50 rounded-lg"
+                  >
                     <div className="flex items-center gap-2 flex-1">
                       <input
                         type="text"
                         value={dep.name}
-                        onChange={(e) => updateDependent(dep.id, { name: e.target.value })}
+                        onChange={(e) =>
+                          updateDependent(dep.id, { name: e.target.value })
+                        }
                         className="flex-1 px-2 py-1 border border-gray-200 rounded text-sm"
                         placeholder="Tên NPT"
                       />
@@ -471,8 +615,18 @@ export default function AnnualSettlement({
                         onClick={() => removeDependent(dep.id)}
                         className="p-1 text-red-500 hover:bg-red-50 rounded sm:hidden"
                       >
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        <svg
+                          className="w-5 h-5"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M6 18L18 6M6 6l12 12"
+                          />
                         </svg>
                       </button>
                     </div>
@@ -480,21 +634,33 @@ export default function AnnualSettlement({
                       <span className="text-gray-500">Từ</span>
                       <select
                         value={dep.fromMonth}
-                        onChange={(e) => updateDependent(dep.id, { fromMonth: Number(e.target.value) })}
+                        onChange={(e) =>
+                          updateDependent(dep.id, {
+                            fromMonth: Number(e.target.value),
+                          })
+                        }
                         className="px-2 py-1 border border-gray-200 rounded"
                       >
                         {MONTH_NAMES.map((name, i) => (
-                          <option key={i} value={i + 1}>{name}</option>
+                          <option key={i} value={i + 1}>
+                            {name}
+                          </option>
                         ))}
                       </select>
                       <span className="text-gray-500">đến</span>
                       <select
                         value={dep.toMonth}
-                        onChange={(e) => updateDependent(dep.id, { toMonth: Number(e.target.value) })}
+                        onChange={(e) =>
+                          updateDependent(dep.id, {
+                            toMonth: Number(e.target.value),
+                          })
+                        }
                         className="px-2 py-1 border border-gray-200 rounded"
                       >
                         {MONTH_NAMES.map((name, i) => (
-                          <option key={i} value={i + 1}>{name}</option>
+                          <option key={i} value={i + 1}>
+                            {name}
+                          </option>
                         ))}
                       </select>
                     </div>
@@ -502,8 +668,18 @@ export default function AnnualSettlement({
                       onClick={() => removeDependent(dep.id)}
                       className="hidden sm:block p-1 text-red-500 hover:bg-red-50 rounded"
                     >
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      <svg
+                        className="w-5 h-5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M6 18L18 6M6 6l12 12"
+                        />
                       </svg>
                     </button>
                   </div>
@@ -514,7 +690,9 @@ export default function AnnualSettlement({
 
           {/* Other deductions */}
           <div className="card">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4">Giảm trừ khác</h3>
+            <h3 className="text-lg font-semibold text-gray-800 mb-4">
+              Giảm trừ khác
+            </h3>
             <div className="space-y-4">
               <div>
                 <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-1">
@@ -527,7 +705,10 @@ export default function AnnualSettlement({
                   type="text"
                   value={formatNumber(charitableContributions)}
                   onChange={(e) => {
-                    const value = parseCurrencyWithWarning(e.target.value, MAX_MONTHLY_INCOME * 12);
+                    const value = parseCurrencyWithWarning(
+                      e.target.value,
+                      MAX_MONTHLY_INCOME * 12,
+                    );
                     setCharitableContributions(value);
                     updateTabState({ charitableContributions: value });
                   }}
@@ -546,7 +727,10 @@ export default function AnnualSettlement({
                   type="text"
                   value={formatNumber(voluntaryPension)}
                   onChange={(e) => {
-                    const value = parseCurrencyWithWarning(e.target.value, 12_000_000);
+                    const value = parseCurrencyWithWarning(
+                      e.target.value,
+                      12_000_000,
+                    );
                     setVoluntaryPension(value);
                     updateTabState({ voluntaryPension: value });
                   }}
@@ -561,7 +745,9 @@ export default function AnnualSettlement({
           <div className="card">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
-                <h3 className="text-lg font-semibold text-gray-800">Thuế đã tạm nộp</h3>
+                <h3 className="text-lg font-semibold text-gray-800">
+                  Thuế đã tạm nộp
+                </h3>
                 <Tooltip content="Tổng thuế khấu trừ hàng tháng, so sánh với thuế thực tế cả năm">
                   <InfoIcon />
                 </Tooltip>
@@ -592,7 +778,10 @@ export default function AnnualSettlement({
                   type="text"
                   value={formatNumber(manualTaxPaid)}
                   onChange={(e) => {
-                    const value = parseCurrencyWithWarning(e.target.value, MAX_MONTHLY_INCOME * 12);
+                    const value = parseCurrencyWithWarning(
+                      e.target.value,
+                      MAX_MONTHLY_INCOME * 12,
+                    );
                     setManualTaxPaid(value);
                     updateTabState({ manualTaxPaid: value });
                   }}
@@ -602,9 +791,11 @@ export default function AnnualSettlement({
               </div>
             ) : (
               <p className="text-sm text-gray-500">
-                Tự động tính từ thuế khấu trừ hàng tháng:{' '}
+                Tự động tính từ thuế khấu trừ hàng tháng:{" "}
                 <span className="font-medium text-gray-700">
-                  {formatCurrency(monthlyIncome.reduce((sum, m) => sum + m.taxPaid, 0))}
+                  {formatCurrency(
+                    monthlyIncome.reduce((sum, m) => sum + m.taxPaid, 0),
+                  )}
                 </span>
               </p>
             )}
@@ -617,19 +808,25 @@ export default function AnnualSettlement({
             <>
               {/* Summary */}
               <div className="card">
-                <h3 className="text-lg font-semibold text-gray-800 mb-4">Kết quả quyết toán</h3>
+                <h3 className="text-lg font-semibold text-gray-800 mb-4">
+                  Kết quả quyết toán
+                </h3>
 
                 <div className="space-y-4">
                   {/* Income summary */}
                   <div className="space-y-2 text-sm">
                     <div className="flex justify-between">
                       <span className="text-gray-600">Tổng thu nhập GROSS</span>
-                      <span className="font-medium">{formatCurrency(result.totalGrossIncome)}</span>
+                      <span className="font-medium">
+                        {formatCurrency(result.totalGrossIncome)}
+                      </span>
                     </div>
                     {result.totalBonusIncome > 0 && (
                       <div className="flex justify-between">
                         <span className="text-gray-600">Thưởng</span>
-                        <span className="font-medium">{formatCurrency(result.totalBonusIncome)}</span>
+                        <span className="font-medium">
+                          {formatCurrency(result.totalBonusIncome)}
+                        </span>
                       </div>
                     )}
                     <div className="flex justify-between font-medium border-t pt-2">
@@ -642,27 +839,39 @@ export default function AnnualSettlement({
                   <div className="space-y-2 text-sm border-t pt-4">
                     <div className="flex justify-between">
                       <span className="text-gray-600">Giảm trừ bản thân</span>
-                      <span className="font-medium text-red-600">-{formatCurrency(result.totalPersonalDeduction)}</span>
+                      <span className="font-medium text-red-600">
+                        -{formatCurrency(result.totalPersonalDeduction)}
+                      </span>
                     </div>
                     {result.totalDependentDeduction > 0 && (
                       <div className="flex justify-between">
-                        <span className="text-gray-600">Giảm trừ người phụ thuộc</span>
-                        <span className="font-medium text-red-600">-{formatCurrency(result.totalDependentDeduction)}</span>
+                        <span className="text-gray-600">
+                          Giảm trừ người phụ thuộc
+                        </span>
+                        <span className="font-medium text-red-600">
+                          -{formatCurrency(result.totalDependentDeduction)}
+                        </span>
                       </div>
                     )}
                     <div className="flex justify-between">
                       <span className="text-gray-600">Bảo hiểm bắt buộc</span>
-                      <span className="font-medium text-red-600">-{formatCurrency(result.totalInsuranceDeduction)}</span>
+                      <span className="font-medium text-red-600">
+                        -{formatCurrency(result.totalInsuranceDeduction)}
+                      </span>
                     </div>
                     {result.totalOtherDeduction > 0 && (
                       <div className="flex justify-between">
                         <span className="text-gray-600">Giảm trừ khác</span>
-                        <span className="font-medium text-red-600">-{formatCurrency(result.totalOtherDeduction)}</span>
+                        <span className="font-medium text-red-600">
+                          -{formatCurrency(result.totalOtherDeduction)}
+                        </span>
                       </div>
                     )}
                     <div className="flex justify-between font-medium border-t pt-2">
                       <span>Tổng giảm trừ</span>
-                      <span className="text-red-600">-{formatCurrency(result.totalDeductions)}</span>
+                      <span className="text-red-600">
+                        -{formatCurrency(result.totalDeductions)}
+                      </span>
                     </div>
                   </div>
 
@@ -670,11 +879,15 @@ export default function AnnualSettlement({
                   <div className="space-y-2 text-sm border-t pt-4">
                     <div className="flex justify-between font-medium">
                       <span>Thu nhập tính thuế</span>
-                      <span>{formatCurrency(result.totalAssessableIncome)}</span>
+                      <span>
+                        {formatCurrency(result.totalAssessableIncome)}
+                      </span>
                     </div>
                     <div className="flex justify-between font-medium text-lg">
                       <span>Thuế TNCN phải nộp cả năm</span>
-                      <span className="text-primary-600">{formatCurrency(result.annualTaxDue)}</span>
+                      <span className="text-primary-600">
+                        {formatCurrency(result.annualTaxDue)}
+                      </span>
                     </div>
                   </div>
 
@@ -682,35 +895,41 @@ export default function AnnualSettlement({
                   <div className="space-y-2 text-sm border-t pt-4">
                     <div className="flex justify-between">
                       <span className="text-gray-600">Thuế đã tạm nộp</span>
-                      <span className="font-medium">{formatCurrency(result.totalTaxPaid)}</span>
+                      <span className="font-medium">
+                        {formatCurrency(result.totalTaxPaid)}
+                      </span>
                     </div>
                   </div>
 
                   {/* Settlement result */}
-                  <div className={`p-4 rounded-lg ${
-                    result.settlementType === 'pay'
-                      ? 'bg-red-50 border border-red-200'
-                      : result.settlementType === 'refund'
-                      ? 'bg-green-50 border border-green-200'
-                      : 'bg-gray-50 border border-gray-200'
-                  }`}>
+                  <div
+                    className={`p-4 rounded-lg ${
+                      result.settlementType === "pay"
+                        ? "bg-red-50 border border-red-200"
+                        : result.settlementType === "refund"
+                          ? "bg-green-50 border border-green-200"
+                          : "bg-gray-50 border border-gray-200"
+                    }`}
+                  >
                     <div className="text-center">
                       <div className="text-sm text-gray-600 mb-1">
-                        {result.settlementType === 'pay'
-                          ? 'Số thuế còn phải nộp thêm'
-                          : result.settlementType === 'refund'
-                          ? 'Số thuế được hoàn lại'
-                          : 'Không phát sinh chênh lệch'}
+                        {result.settlementType === "pay"
+                          ? "Số thuế còn phải nộp thêm"
+                          : result.settlementType === "refund"
+                            ? "Số thuế được hoàn lại"
+                            : "Không phát sinh chênh lệch"}
                       </div>
-                      <div className={`text-2xl font-bold ${
-                        result.settlementType === 'pay'
-                          ? 'text-red-600'
-                          : result.settlementType === 'refund'
-                          ? 'text-green-600'
-                          : 'text-gray-600'
-                      }`}>
-                        {result.settlementType === 'even'
-                          ? '0 VND'
+                      <div
+                        className={`text-2xl font-bold ${
+                          result.settlementType === "pay"
+                            ? "text-red-600"
+                            : result.settlementType === "refund"
+                              ? "text-green-600"
+                              : "text-gray-600"
+                        }`}
+                      >
+                        {result.settlementType === "even"
+                          ? "0 VND"
                           : formatCurrency(Math.abs(result.difference))}
                       </div>
                     </div>
@@ -721,36 +940,53 @@ export default function AnnualSettlement({
               {/* Period breakdown for transition year */}
               {result.isTransitionYear && result.periods && (
                 <div className="card">
-                  <h3 className="text-lg font-semibold text-gray-800 mb-4">Chi tiết theo giai đoạn</h3>
+                  <h3 className="text-lg font-semibold text-gray-800 mb-4">
+                    Chi tiết theo giai đoạn
+                  </h3>
                   <div className="grid sm:grid-cols-2 gap-4">
                     {result.periods.map((period) => (
-                      <div key={period.periodName} className="p-4 bg-gray-50 rounded-lg">
+                      <div
+                        key={period.periodName}
+                        className="p-4 bg-gray-50 rounded-lg"
+                      >
                         <div className="flex items-center justify-between mb-3">
-                          <span className="font-semibold text-gray-800">{period.periodName}</span>
-                          <span className={`text-xs px-2 py-1 rounded-full ${
-                            period.law === 'old'
-                              ? 'bg-gray-200 text-gray-700'
-                              : 'bg-primary-100 text-primary-700'
-                          }`}>
-                            Luật {period.law === 'old' ? 'cũ' : 'mới'}
+                          <span className="font-semibold text-gray-800">
+                            {period.periodName}
+                          </span>
+                          <span
+                            className={`text-xs px-2 py-1 rounded-full ${
+                              period.law === "old"
+                                ? "bg-gray-200 text-gray-700"
+                                : "bg-primary-100 text-primary-700"
+                            }`}
+                          >
+                            Luật {period.law === "old" ? "cũ" : "mới"}
                           </span>
                         </div>
                         <div className="space-y-2 text-sm">
                           <div className="flex justify-between">
                             <span className="text-gray-600">Thu nhập</span>
-                            <span>{formatCurrency(period.totalTaxableIncome)}</span>
+                            <span>
+                              {formatCurrency(period.totalTaxableIncome)}
+                            </span>
                           </div>
                           <div className="flex justify-between">
                             <span className="text-gray-600">Giảm trừ</span>
-                            <span className="text-red-600">-{formatCurrency(period.totalDeductions)}</span>
+                            <span className="text-red-600">
+                              -{formatCurrency(period.totalDeductions)}
+                            </span>
                           </div>
                           <div className="flex justify-between">
                             <span className="text-gray-600">TN tính thuế</span>
-                            <span>{formatCurrency(period.assessableIncome)}</span>
+                            <span>
+                              {formatCurrency(period.assessableIncome)}
+                            </span>
                           </div>
                           <div className="flex justify-between font-medium pt-2 border-t">
                             <span>Thuế phải nộp</span>
-                            <span className="text-primary-600">{formatCurrency(period.taxDue)}</span>
+                            <span className="text-primary-600">
+                              {formatCurrency(period.taxDue)}
+                            </span>
                           </div>
                         </div>
                       </div>
@@ -765,14 +1001,21 @@ export default function AnnualSettlement({
                   onClick={() => setShowMonthlyDetails(!showMonthlyDetails)}
                   className="flex items-center justify-between w-full"
                 >
-                  <h3 className="text-lg font-semibold text-gray-800">Chi tiết hàng tháng</h3>
+                  <h3 className="text-lg font-semibold text-gray-800">
+                    Chi tiết hàng tháng
+                  </h3>
                   <svg
-                    className={`w-5 h-5 text-gray-500 transition-transform ${showMonthlyDetails ? 'rotate-180' : ''}`}
+                    className={`w-5 h-5 text-gray-500 transition-transform ${showMonthlyDetails ? "rotate-180" : ""}`}
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
                   >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M19 9l-7 7-7-7"
+                    />
                   </svg>
                 </button>
 
@@ -790,35 +1033,69 @@ export default function AnnualSettlement({
                       </thead>
                       <tbody>
                         {result.monthlyBreakdown.map((month) => (
-                          <tr key={month.month} className="border-b border-gray-100">
+                          <tr
+                            key={month.month}
+                            className="border-b border-gray-100"
+                          >
                             <td className="py-2 pr-2">
-                              <span className="font-medium">{month.monthName}</span>
+                              <span className="font-medium">
+                                {month.monthName}
+                              </span>
                               {year === 2026 && (
-                                <span className={`ml-2 text-xs px-1.5 py-0.5 rounded ${
-                                  month.law === 'old' ? 'bg-gray-100' : 'bg-primary-50 text-primary-700'
-                                }`}>
-                                  {month.law === 'old' ? 'Cũ' : 'Mới'}
+                                <span
+                                  className={`ml-2 text-xs px-1.5 py-0.5 rounded ${
+                                    month.law === "old"
+                                      ? "bg-gray-100"
+                                      : "bg-primary-50 text-primary-700"
+                                  }`}
+                                >
+                                  {month.law === "old" ? "Cũ" : "Mới"}
                                 </span>
                               )}
                             </td>
-                            <td className="py-2 px-2 text-right">{formatNumber(month.gross + month.bonus)}</td>
+                            <td className="py-2 px-2 text-right">
+                              {formatNumber(month.gross + month.bonus)}
+                            </td>
                             <td className="py-2 px-2 text-right text-red-600">
-                              -{formatNumber(month.insurance + month.personalDeduction + month.dependentDeduction)}
+                              -
+                              {formatNumber(
+                                month.insurance +
+                                  month.personalDeduction +
+                                  month.dependentDeduction,
+                              )}
                             </td>
                             <td className="py-2 px-2 text-right">
-                              {formatNumber(Math.max(0, month.taxableIncome - month.insurance - month.personalDeduction - month.dependentDeduction))}
+                              {formatNumber(
+                                Math.max(
+                                  0,
+                                  month.taxableIncome -
+                                    month.insurance -
+                                    month.personalDeduction -
+                                    month.dependentDeduction,
+                                ),
+                              )}
                             </td>
-                            <td className="py-2 pl-2 text-right font-medium">{formatNumber(month.taxPaid)}</td>
+                            <td className="py-2 pl-2 text-right font-medium">
+                              {formatNumber(month.taxPaid)}
+                            </td>
                           </tr>
                         ))}
                       </tbody>
                       <tfoot>
                         <tr className="font-medium bg-gray-50">
                           <td className="py-2 pr-2">Tổng</td>
-                          <td className="py-2 px-2 text-right">{formatCurrency(result.totalTaxableIncome)}</td>
-                          <td className="py-2 px-2 text-right text-red-600">-{formatCurrency(result.totalDeductions)}</td>
-                          <td className="py-2 px-2 text-right">{formatCurrency(result.totalAssessableIncome)}</td>
-                          <td className="py-2 pl-2 text-right">{formatCurrency(result.totalTaxPaid)}</td>
+                          <td className="py-2 px-2 text-right">
+                            {formatCurrency(result.totalTaxableIncome)}
+                          </td>
+                          <td className="py-2 px-2 text-right text-red-600">
+                            -{formatCurrency(result.totalDeductions)}
+                          </td>
+                          <td className="py-2 px-2 text-right">
+                            {formatCurrency(result.totalAssessableIncome)}
+                          </td>
+                          <td className="py-2 pl-2 text-right">
+                            {formatCurrency(result.totalTaxPaid)}
+                          </td>
                         </tr>
                       </tfoot>
                     </table>
@@ -828,23 +1105,44 @@ export default function AnnualSettlement({
 
               {/* Settlement info */}
               <div className="card bg-blue-50 border-blue-200">
-                <h4 className="font-medium text-blue-800 mb-2">Lưu ý về quyết toán thuế</h4>
+                <h4 className="font-medium text-blue-800 mb-2">
+                  Lưu ý về quyết toán thuế
+                </h4>
                 <ul className="text-sm text-blue-700 space-y-1">
-                  <li>• Thời hạn quyết toán năm {year}: 1/1 - 31/3/{year + 1}</li>
+                  <li>
+                    • Thời hạn quyết toán năm {year}: 1/1 - 31/3/{year + 1}
+                  </li>
                   <li>• Nếu có nhiều nguồn thu nhập, cần khai báo tất cả</li>
-                  <li>• Thuế hoàn lại sẽ được chuyển vào tài khoản ngân hàng đã đăng ký</li>
-                  <li>• Cần lưu giữ chứng từ trong 5 năm để đối chiếu khi cần</li>
+                  <li>
+                    • Thuế hoàn lại sẽ được chuyển vào tài khoản ngân hàng đã
+                    đăng ký
+                  </li>
+                  <li>
+                    • Cần lưu giữ chứng từ trong 5 năm để đối chiếu khi cần
+                  </li>
                 </ul>
               </div>
             </>
           ) : (
             <div className="card text-center py-12">
               <div className="text-gray-500 mb-4">
-                <svg className="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                <svg
+                  className="w-16 h-16 mx-auto"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={1.5}
+                    d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"
+                  />
                 </svg>
               </div>
-              <p className="text-gray-500">Nhập thông tin thu nhập để xem kết quả quyết toán</p>
+              <p className="text-gray-500">
+                Nhập thông tin thu nhập để xem kết quả quyết toán
+              </p>
             </div>
           )}
         </div>

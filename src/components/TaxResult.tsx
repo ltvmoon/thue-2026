@@ -1,15 +1,17 @@
-'use client';
+"use client";
 
-import { memo, useMemo, lazy, Suspense } from 'react';
+import { memo, useMemo, lazy, Suspense } from "react";
 import {
   TaxResult as TaxResultType,
   formatCurrency,
   OtherIncomeTaxResult,
   AllowancesBreakdown,
-} from '@/lib/taxCalculator';
-import { PDFExportButton } from '@/components/PDFExport';
+} from "@/lib/taxCalculator";
+import { PDFExportButton } from "@/components/PDFExport";
 
-const IncomeWaterfallChart = lazy(() => import('@/components/IncomeWaterfallChart'));
+const IncomeWaterfallChart = lazy(
+  () => import("@/components/IncomeWaterfallChart"),
+);
 
 interface TaxResultProps {
   result: TaxResultType;
@@ -17,13 +19,19 @@ interface TaxResultProps {
   declaredSalary?: number;
 }
 
-function TaxResultComponent({ result, otherIncomeTax, declaredSalary }: TaxResultProps) {
+function TaxResultComponent({
+  result,
+  otherIncomeTax,
+  declaredSalary,
+}: TaxResultProps) {
   // Calculate totals including other income
   const hasOtherIncome = otherIncomeTax && otherIncomeTax.totalIncome > 0;
-  const totalTax = result.taxAmount + (hasOtherIncome ? otherIncomeTax.totalTax : 0);
+  const totalTax =
+    result.taxAmount + (hasOtherIncome ? otherIncomeTax.totalTax : 0);
 
   // Check if using declared salary for insurance
-  const hasDeclaredSalary = declaredSalary !== undefined && declaredSalary !== result.grossIncome;
+  const hasDeclaredSalary =
+    declaredSalary !== undefined && declaredSalary !== result.grossIncome;
 
   return (
     <div className="space-y-6">
@@ -32,14 +40,29 @@ function TaxResultComponent({ result, otherIncomeTax, declaredSalary }: TaxResul
         <div className="bg-amber-50 border-l-4 border-amber-400 p-4 rounded-r-lg">
           <div className="flex">
             <div className="flex-shrink-0">
-              <svg className="h-5 w-5 text-amber-400" viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+              <svg
+                className="h-5 w-5 text-amber-400"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                  clipRule="evenodd"
+                />
               </svg>
             </div>
             <div className="ml-3">
               <p className="text-sm text-amber-700">
-                <span className="font-medium">Lưu ý:</span> Bảo hiểm tính trên lương khai báo <span className="font-semibold">{formatCurrency(declaredSalary)}</span>,
-                nhưng thuế TNCN vẫn tính trên lương thực tế <span className="font-semibold">{formatCurrency(result.grossIncome)}</span>
+                <span className="font-medium">Lưu ý:</span> Bảo hiểm tính trên
+                lương khai báo{" "}
+                <span className="font-semibold">
+                  {formatCurrency(declaredSalary)}
+                </span>
+                , nhưng thuế TNCN vẫn tính trên lương thực tế{" "}
+                <span className="font-semibold">
+                  {formatCurrency(result.grossIncome)}
+                </span>
               </p>
             </div>
           </div>
@@ -59,23 +82,39 @@ function TaxResultComponent({ result, otherIncomeTax, declaredSalary }: TaxResul
       {hasOtherIncome && (
         <div className="bg-gradient-to-r from-blue-500 to-indigo-600 rounded-xl p-6 text-white">
           <div className="flex items-center gap-3 mb-2">
-            <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+            <svg
+              className="w-8 h-8"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"
+              />
             </svg>
             <h3 className="text-xl font-bold">Thu nhập khác</h3>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
             <div>
               <div className="text-blue-100 text-sm">Tổng thu nhập</div>
-              <div className="text-2xl font-bold font-mono tabular-nums">{formatCurrency(otherIncomeTax.totalIncome)}</div>
+              <div className="text-2xl font-bold font-mono tabular-nums">
+                {formatCurrency(otherIncomeTax.totalIncome)}
+              </div>
             </div>
             <div>
               <div className="text-blue-100 text-sm">Thuế phải nộp</div>
-              <div className="text-2xl font-bold font-mono tabular-nums">{formatCurrency(otherIncomeTax.totalTax)}</div>
+              <div className="text-2xl font-bold font-mono tabular-nums">
+                {formatCurrency(otherIncomeTax.totalTax)}
+              </div>
             </div>
             <div>
               <div className="text-blue-100 text-sm">Thực nhận</div>
-              <div className="text-2xl font-bold font-mono tabular-nums">{formatCurrency(otherIncomeTax.totalNet)}</div>
+              <div className="text-2xl font-bold font-mono tabular-nums">
+                {formatCurrency(otherIncomeTax.totalNet)}
+              </div>
             </div>
           </div>
         </div>
@@ -85,23 +124,39 @@ function TaxResultComponent({ result, otherIncomeTax, declaredSalary }: TaxResul
       {hasOtherIncome && (
         <div className="bg-gray-800 rounded-xl p-6 text-white">
           <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+            <svg
+              className="w-6 h-6"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+              />
             </svg>
             Tổng kết tất cả nguồn thu nhập
           </h3>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div>
               <div className="text-gray-300 text-sm">Lương GROSS</div>
-              <div className="text-xl font-bold font-mono tabular-nums">{formatCurrency(result.grossIncome)}</div>
+              <div className="text-xl font-bold font-mono tabular-nums">
+                {formatCurrency(result.grossIncome)}
+              </div>
             </div>
             <div>
               <div className="text-gray-300 text-sm">Thu nhập khác</div>
-              <div className="text-xl font-bold font-mono tabular-nums">{formatCurrency(otherIncomeTax.totalIncome)}</div>
+              <div className="text-xl font-bold font-mono tabular-nums">
+                {formatCurrency(otherIncomeTax.totalIncome)}
+              </div>
             </div>
             <div>
               <div className="text-gray-300 text-sm">Tổng thuế</div>
-              <div className="text-xl font-bold text-red-400 font-mono tabular-nums">{formatCurrency(totalTax)}</div>
+              <div className="text-xl font-bold text-red-400 font-mono tabular-nums">
+                {formatCurrency(totalTax)}
+              </div>
             </div>
             <div>
               <div className="text-gray-300 text-sm">Tổng thực nhận</div>
@@ -118,21 +173,33 @@ function TaxResultComponent({ result, otherIncomeTax, declaredSalary }: TaxResul
         <div className="flex items-center gap-2 mb-4">
           <div className="w-3 h-3 rounded-full bg-primary-500"></div>
           <h3 className="text-lg font-bold text-gray-800">Kết quả tính thuế</h3>
-          <span className="text-xs bg-primary-100 text-primary-700 px-2 py-1 rounded-full">Luật 109/2025 – 5 bậc</span>
+          <span className="text-xs bg-primary-100 text-primary-700 px-2 py-1 rounded-full">
+            Luật 109/2025 – 5 bậc
+          </span>
         </div>
-        <ResultDetails result={result} colorClass="text-primary-600" declaredSalary={declaredSalary} />
+        <ResultDetails
+          result={result}
+          colorClass="text-primary-600"
+          declaredSalary={declaredSalary}
+        />
       </div>
 
       {/* Chi tiết biểu thuế */}
-      <TaxBreakdown result={result} title="Chi tiết các bậc thuế" colorClass="bg-primary-500" />
+      <TaxBreakdown
+        result={result}
+        title="Chi tiết các bậc thuế"
+        colorClass="bg-primary-500"
+      />
 
       {/* Biểu đồ dòng tiền (Waterfall Chart) */}
-      <Suspense fallback={
-        <div className="card mt-6 animate-pulse">
-          <div className="h-6 bg-gray-200 rounded w-48 mb-4"></div>
-          <div className="h-[320px] bg-gray-100 rounded"></div>
-        </div>
-      }>
+      <Suspense
+        fallback={
+          <div className="card mt-6 animate-pulse">
+            <div className="h-6 bg-gray-200 rounded w-48 mb-4"></div>
+            <div className="h-[320px] bg-gray-100 rounded"></div>
+          </div>
+        }
+      >
         <IncomeWaterfallChart result={result} label="Thuế TNCN" />
       </Suspense>
     </div>
@@ -140,39 +207,71 @@ function TaxResultComponent({ result, otherIncomeTax, declaredSalary }: TaxResul
 }
 
 // Memoize ResultDetails to prevent unnecessary re-renders
-const ResultDetails = memo(function ResultDetails({ result, colorClass, declaredSalary }: { result: TaxResultType; colorClass: string; declaredSalary?: number }) {
+const ResultDetails = memo(function ResultDetails({
+  result,
+  colorClass,
+  declaredSalary,
+}: {
+  result: TaxResultType;
+  colorClass: string;
+  declaredSalary?: number;
+}) {
   const { insuranceDetail, allowancesBreakdown } = result;
   const hasInsurance = result.insuranceDeduction > 0;
-  const hasDeclaredSalary = declaredSalary !== undefined && declaredSalary !== result.grossIncome;
+  const hasDeclaredSalary =
+    declaredSalary !== undefined && declaredSalary !== result.grossIncome;
   const hasAllowances = allowancesBreakdown && allowancesBreakdown.total > 0;
-  const effectiveRate = Number.isFinite(result.effectiveRate) ? result.effectiveRate : 0;
+  const effectiveRate = Number.isFinite(result.effectiveRate)
+    ? result.effectiveRate
+    : 0;
+  const taxAmount = Number.isFinite(result.taxAmount) ? result.taxAmount : 0;
+  const netIncome = Number.isFinite(result.netIncome) ? result.netIncome : 0;
+  const taxableIncome = Number.isFinite(result.taxableIncome)
+    ? result.taxableIncome
+    : 0;
+  const grossIncome = Number.isFinite(result.grossIncome)
+    ? result.grossIncome
+    : 0;
+  const personalDeduction = Number.isFinite(result.personalDeduction)
+    ? result.personalDeduction
+    : 0;
+  const dependentDeduction = Number.isFinite(result.dependentDeduction)
+    ? result.dependentDeduction
+    : 0;
+  const otherDeductions = Number.isFinite(result.otherDeductions)
+    ? result.otherDeductions
+    : 0;
 
-  const items: Array<{ label: string; value: number; isHeader?: boolean; isPositive?: boolean; isSubItem?: boolean }> = [
-    { label: 'Thu nhập gộp', value: result.grossIncome },
-  ];
+  const items: Array<{
+    label: string;
+    value: number;
+    isHeader?: boolean;
+    isPositive?: boolean;
+    isSubItem?: boolean;
+  }> = [{ label: "Thu nhập gộp", value: grossIncome }];
 
   // Thêm chi tiết phụ cấp nếu có
   if (hasAllowances) {
     items.push({
-      label: 'Phụ cấp',
+      label: "Phụ cấp",
       value: allowancesBreakdown.total,
       isHeader: true,
-      isPositive: true
+      isPositive: true,
     });
     if (allowancesBreakdown.taxExempt > 0) {
       items.push({
-        label: '  └ Miễn thuế',
+        label: "  └ Miễn thuế",
         value: allowancesBreakdown.taxExempt,
         isPositive: true,
-        isSubItem: true
+        isSubItem: true,
       });
     }
     if (allowancesBreakdown.taxable > 0) {
       items.push({
-        label: '  └ Chịu thuế',
+        label: "  └ Chịu thuế",
         value: allowancesBreakdown.taxable,
         isPositive: true,
-        isSubItem: true
+        isSubItem: true,
       });
     }
   }
@@ -182,41 +281,56 @@ const ResultDetails = memo(function ResultDetails({ result, colorClass, declared
     if (hasDeclaredSalary) {
       items.push({
         label: `Bảo hiểm (trên ${formatCurrency(declaredSalary)})`,
-        value: -result.insuranceDeduction,
-        isHeader: true
+        value: -(Number.isFinite(result.insuranceDeduction)
+          ? result.insuranceDeduction
+          : 0),
+        isHeader: true,
       });
     }
     if (insuranceDetail.bhxh > 0) {
-      items.push({ label: '  └ BHXH (8%)', value: -insuranceDetail.bhxh });
+      items.push({ label: "  └ BHXH (8%)", value: -insuranceDetail.bhxh });
     }
     if (insuranceDetail.bhyt > 0) {
-      items.push({ label: '  └ BHYT (1.5%)', value: -insuranceDetail.bhyt });
+      items.push({ label: "  └ BHYT (1.5%)", value: -insuranceDetail.bhyt });
     }
     if (insuranceDetail.bhtn > 0) {
-      items.push({ label: '  └ BHTN (1%)', value: -insuranceDetail.bhtn });
+      items.push({ label: "  └ BHTN (1%)", value: -insuranceDetail.bhtn });
     }
   }
 
   items.push(
-    { label: 'Giảm trừ bản thân', value: -result.personalDeduction },
-    { label: 'Giảm trừ người phụ thuộc', value: -result.dependentDeduction },
+    { label: "Giảm trừ bản thân", value: -result.personalDeduction },
+    { label: "Giảm trừ người phụ thuộc", value: -result.dependentDeduction },
   );
 
   if (result.otherDeductions > 0) {
-    items.push({ label: 'Giảm trừ khác', value: -result.otherDeductions });
+    items.push({ label: "Giảm trừ khác", value: -result.otherDeductions });
   }
 
   return (
     <div className="space-y-3">
       {items.map((item, index) => (
         <div key={index} className="flex justify-between text-sm">
-          <span className={item.isHeader ? 'text-gray-700 font-medium' : 'text-gray-600'}>{item.label}</span>
-          <span className={
-            item.isPositive
-              ? (item.isSubItem ? 'text-green-500' : 'font-medium text-green-600')
-              : (item.value < 0 ? 'text-gray-500' : 'font-medium')
-          }>
-            {item.isPositive ? '+' : ''}{formatCurrency(item.value)}
+          <span
+            className={
+              item.isHeader ? "text-gray-700 font-medium" : "text-gray-600"
+            }
+          >
+            {item.label}
+          </span>
+          <span
+            className={
+              item.isPositive
+                ? item.isSubItem
+                  ? "text-green-500"
+                  : "font-medium text-green-600"
+                : item.value < 0
+                  ? "text-gray-500"
+                  : "font-medium"
+            }
+          >
+            {item.isPositive ? "+" : ""}
+            {formatCurrency(item.value)}
           </span>
         </div>
       ))}
@@ -224,15 +338,17 @@ const ResultDetails = memo(function ResultDetails({ result, colorClass, declared
       <div className="border-t pt-3 mt-3">
         <div className="flex justify-between text-sm">
           <span className="text-gray-600">Thu nhập tính thuế</span>
-          <span className="font-medium">{formatCurrency(result.taxableIncome)}</span>
+          <span className="font-medium">{formatCurrency(taxableIncome)}</span>
         </div>
       </div>
 
       <div className="bg-gray-50 rounded-lg p-4 mt-4">
         <div className="flex justify-between items-center">
           <span className="font-medium text-gray-700">Thuế TNCN phải nộp</span>
-          <span className={`text-2xl font-bold font-mono tabular-nums ${colorClass}`}>
-            {formatCurrency(result.taxAmount)}
+          <span
+            className={`text-2xl font-bold font-mono tabular-nums ${colorClass}`}
+          >
+            {formatCurrency(taxAmount)}
           </span>
         </div>
         <div className="flex justify-between text-sm mt-2 text-gray-500">
@@ -245,7 +361,7 @@ const ResultDetails = memo(function ResultDetails({ result, colorClass, declared
         <div className="flex justify-between">
           <span className="font-medium text-gray-700">Thu nhập thực nhận</span>
           <span className="text-xl font-bold text-green-600 font-mono tabular-nums">
-            {formatCurrency(result.netIncome)}
+            {formatCurrency(netIncome)}
           </span>
         </div>
       </div>
@@ -254,8 +370,20 @@ const ResultDetails = memo(function ResultDetails({ result, colorClass, declared
 });
 
 // Memoize TaxBreakdown to prevent unnecessary re-renders
-const TaxBreakdown = memo(function TaxBreakdown({ result, title, colorClass }: { result: TaxResultType; title: string; colorClass: string }) {
-  if (result.taxBreakdown.length === 0) {
+const TaxBreakdown = memo(function TaxBreakdown({
+  result,
+  title,
+  colorClass,
+}: {
+  result: TaxResultType;
+  title: string;
+  colorClass: string;
+}) {
+  const safeBreakdown = result.taxBreakdown ?? [];
+  const safeTaxAmount = Number.isFinite(result.taxAmount)
+    ? result.taxAmount
+    : 0;
+  if (safeBreakdown.length === 0) {
     return (
       <div className="card">
         <h4 className="font-semibold text-gray-800 mb-4">{title}</h4>
@@ -268,18 +396,24 @@ const TaxBreakdown = memo(function TaxBreakdown({ result, title, colorClass }: {
     <div className="card">
       <h4 className="font-semibold text-gray-800 mb-4">{title}</h4>
       <div className="space-y-2">
-        {result.taxBreakdown.map((item, index) => (
+        {safeBreakdown.map((item, index) => (
           <div key={index} className="flex items-center gap-3">
-            <div className={`w-2 h-8 rounded-full ${colorClass}`} style={{ opacity: 0.3 + (index * 0.15) }}></div>
+            <div
+              className={`w-2 h-8 rounded-full ${colorClass}`}
+              style={{ opacity: 0.3 + index * 0.15 }}
+            ></div>
             <div className="flex-1">
               <div className="flex justify-between text-sm">
                 <span className="text-gray-600">
                   Bậc {item.bracket} ({(item.rate * 100).toFixed(0)}%)
                 </span>
-                <span className="font-medium">{formatCurrency(item.taxAmount)}</span>
+                <span className="font-medium">
+                  {formatCurrency(item.taxAmount)}
+                </span>
               </div>
               <div className="text-xs text-gray-500">
-                {formatCurrency(item.taxableAmount)} × {(item.rate * 100).toFixed(0)}%
+                {formatCurrency(item.taxableAmount)} ×{" "}
+                {(item.rate * 100).toFixed(0)}%
               </div>
             </div>
           </div>
@@ -287,7 +421,7 @@ const TaxBreakdown = memo(function TaxBreakdown({ result, title, colorClass }: {
         <div className="border-t pt-2 mt-2">
           <div className="flex justify-between font-semibold">
             <span>Tổng thuế</span>
-            <span>{formatCurrency(result.taxAmount)}</span>
+            <span>{formatCurrency(safeTaxAmount)}</span>
           </div>
         </div>
       </div>

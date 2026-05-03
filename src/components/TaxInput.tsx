@@ -1,15 +1,34 @@
-'use client';
+"use client";
 
-import { useState, useEffect, useRef, useMemo, memo, useCallback } from 'react';
-import { formatNumber, RegionType, getRegionalMinimumWages, formatCurrency, InsuranceOptions, DEFAULT_INSURANCE_OPTIONS, AllowancesState, DEFAULT_ALLOWANCES, ALLOWANCE_LIMITS, calculateAllowancesBreakdown } from '@/lib/taxCalculator';
-import { grossToNet, netToGross, GrossNetInput } from '@/lib/grossNetCalculator';
-import { CurrencyInputIssues, MAX_MONTHLY_INCOME, parseCurrencyInput } from '@/utils/inputSanitizers';
-import Tooltip from '@/components/ui/Tooltip';
+import { useState, useEffect, useRef, useMemo, memo, useCallback } from "react";
+import {
+  formatNumber,
+  RegionType,
+  getRegionalMinimumWages,
+  formatCurrency,
+  InsuranceOptions,
+  DEFAULT_INSURANCE_OPTIONS,
+  AllowancesState,
+  DEFAULT_ALLOWANCES,
+  ALLOWANCE_LIMITS,
+  calculateAllowancesBreakdown,
+} from "@/lib/taxCalculator";
+import {
+  grossToNet,
+  netToGross,
+  GrossNetInput,
+} from "@/lib/grossNetCalculator";
+import {
+  CurrencyInputIssues,
+  MAX_MONTHLY_INCOME,
+  parseCurrencyInput,
+} from "@/utils/inputSanitizers";
+import Tooltip from "@/components/ui/Tooltip";
 
 // Helper: hiển thị giá trị currency, cho phép rỗng khi user xóa hết (thay vì lock ở "0")
 function displayCurrency(rawValue: string): string {
   const num = parseInt(rawValue, 10);
-  if (rawValue === '' || isNaN(num)) return '';
+  if (rawValue === "" || isNaN(num)) return "";
   return formatNumber(num);
 }
 
@@ -40,46 +59,57 @@ interface TaxInputProps {
 
 function TaxInputComponent({ onCalculate, initialValues }: TaxInputProps) {
   const [grossIncome, setGrossIncome] = useState<string>(
-    initialValues?.grossIncome?.toString() ?? '30000000'
+    initialValues?.grossIncome?.toString() ?? "30000000",
   );
   const [useDeclaredSalary, setUseDeclaredSalary] = useState<boolean>(
-    initialValues?.declaredSalary !== undefined
+    initialValues?.declaredSalary !== undefined,
   );
   const [declaredSalary, setDeclaredSalary] = useState<string>(
-    initialValues?.declaredSalary?.toString() ?? ''
+    initialValues?.declaredSalary?.toString() ?? "",
   );
-  const [dependents, setDependents] = useState<number>(initialValues?.dependents ?? 0);
+  const [dependents, setDependents] = useState<number>(
+    initialValues?.dependents ?? 0,
+  );
   const [otherDeductions, setOtherDeductions] = useState<string>(
-    initialValues?.otherDeductions?.toString() ?? '0'
+    initialValues?.otherDeductions?.toString() ?? "0",
   );
-  const [hasInsurance, setHasInsurance] = useState<boolean>(initialValues?.hasInsurance ?? true);
+  const [hasInsurance, setHasInsurance] = useState<boolean>(
+    initialValues?.hasInsurance ?? true,
+  );
   const [insuranceOptions, setInsuranceOptions] = useState<InsuranceOptions>(
-    initialValues?.insuranceOptions ?? DEFAULT_INSURANCE_OPTIONS
+    initialValues?.insuranceOptions ?? DEFAULT_INSURANCE_OPTIONS,
   );
   const [region, setRegion] = useState<RegionType>(initialValues?.region ?? 1);
   const [pensionContribution, setPensionContribution] = useState<string>(
-    initialValues?.pensionContribution?.toString() ?? '0'
+    initialValues?.pensionContribution?.toString() ?? "0",
   );
   const [showAdvanced, setShowAdvanced] = useState<boolean>(false);
   const [showAllowances, setShowAllowances] = useState<boolean>(false);
   const [allowances, setAllowances] = useState<AllowancesState>(
-    initialValues?.allowances ?? { ...DEFAULT_ALLOWANCES }
+    initialValues?.allowances ?? { ...DEFAULT_ALLOWANCES },
   );
-  const [inputMode, setInputMode] = useState<'gross' | 'net'>('gross');
-  const [netIncome, setNetIncome] = useState<string>('');
+  const [inputMode, setInputMode] = useState<"gross" | "net">("gross");
+  const [netIncome, setNetIncome] = useState<string>("");
   const [grossWarning, setGrossWarning] = useState<string | null>(null);
   const [declaredWarning, setDeclaredWarning] = useState<string | null>(null);
-  const [otherDeductionWarning, setOtherDeductionWarning] = useState<string | null>(null);
+  const [otherDeductionWarning, setOtherDeductionWarning] = useState<
+    string | null
+  >(null);
   const [pensionWarning, setPensionWarning] = useState<string | null>(null);
   const [allowanceWarning, setAllowanceWarning] = useState<string | null>(null);
 
   // Get date-aware regional minimum wages
-  const regionalMinimumWages = useMemo(() => getRegionalMinimumWages(new Date()), []);
+  const regionalMinimumWages = useMemo(
+    () => getRegionalMinimumWages(new Date()),
+    [],
+  );
 
   // Track if we're syncing from external changes
   const isExternalUpdate = useRef(false);
   // Track the last grossIncome sent via onCalculate, to detect external vs local changes
-  const lastSentGross = useRef<number>(parseInt(initialValues?.grossIncome?.toString() ?? '30000000', 10));
+  const lastSentGross = useRef<number>(
+    parseInt(initialValues?.grossIncome?.toString() ?? "30000000", 10),
+  );
 
   // Sync with initialValues when they change from other tabs
   useEffect(() => {
@@ -87,7 +117,7 @@ function TaxInputComponent({ onCalculate, initialValues }: TaxInputProps) {
       isExternalUpdate.current = true;
       setGrossIncome(initialValues.grossIncome.toString());
       setUseDeclaredSalary(initialValues.declaredSalary !== undefined);
-      setDeclaredSalary(initialValues.declaredSalary?.toString() ?? '');
+      setDeclaredSalary(initialValues.declaredSalary?.toString() ?? "");
       setDependents(initialValues.dependents);
       setOtherDeductions(initialValues.otherDeductions.toString());
       setHasInsurance(initialValues.hasInsurance);
@@ -96,18 +126,23 @@ function TaxInputComponent({ onCalculate, initialValues }: TaxInputProps) {
       setPensionContribution(initialValues.pensionContribution.toString());
       if (initialValues.allowances) {
         setAllowances(initialValues.allowances);
-        const hasAnyAllowance = Object.values(initialValues.allowances).some(v => v !== 0);
+        const hasAnyAllowance = Object.values(initialValues.allowances).some(
+          (v) => v !== 0,
+        );
         if (hasAnyAllowance) {
           setShowAllowances(true);
         }
       }
       // Nếu đang ở NET mode VÀ grossIncome thay đổi từ bên ngoài (tab khác),
       // tính lại NET tương ứng. Skip nếu grossIncome giống lastSentGross (thay đổi từ chính TaxInput).
-      if (inputMode === 'net' && initialValues.grossIncome > 0
-        && initialValues.grossIncome !== lastSentGross.current) {
+      if (
+        inputMode === "net" &&
+        initialValues.grossIncome > 0 &&
+        initialValues.grossIncome !== lastSentGross.current
+      ) {
         const result = grossToNet({
           amount: initialValues.grossIncome,
-          type: 'gross',
+          type: "gross",
           dependents: initialValues.dependents,
           hasInsurance: initialValues.hasInsurance,
           useNewLaw: true,
@@ -124,59 +159,79 @@ function TaxInputComponent({ onCalculate, initialValues }: TaxInputProps) {
   }, [initialValues, inputMode]);
 
   // Helper: build GrossNetInput từ state hiện tại
-  const buildGrossNetInputParams = useCallback((amount: number, type: 'gross' | 'net'): GrossNetInput => ({
-    amount,
-    type,
-    dependents,
-    hasInsurance,
-    useNewLaw: true,
-    region,
-    declaredSalary: useDeclaredSalary ? (parseInt(declaredSalary, 10) || undefined) : undefined,
-    allowances: showAllowances ? allowances : undefined,
-  }), [dependents, hasInsurance, region, useDeclaredSalary, declaredSalary, showAllowances, allowances]);
+  const buildGrossNetInputParams = useCallback(
+    (amount: number, type: "gross" | "net"): GrossNetInput => ({
+      amount,
+      type,
+      dependents,
+      hasInsurance,
+      useNewLaw: true,
+      region,
+      declaredSalary: useDeclaredSalary
+        ? parseInt(declaredSalary, 10) || undefined
+        : undefined,
+      allowances: showAllowances ? allowances : undefined,
+    }),
+    [
+      dependents,
+      hasInsurance,
+      region,
+      useDeclaredSalary,
+      declaredSalary,
+      showAllowances,
+      allowances,
+    ],
+  );
 
   // Chuyển đổi mode GROSS ↔ NET
-  const handleModeChange = useCallback((newMode: 'gross' | 'net') => {
-    if (newMode === inputMode) return;
+  const handleModeChange = useCallback(
+    (newMode: "gross" | "net") => {
+      if (newMode === inputMode) return;
 
-    if (newMode === 'net') {
-      // GROSS → NET: tính NET từ GROSS hiện tại
-      const currentGross = parseInt(grossIncome, 10) || 0;
-      if (currentGross > 0) {
-        const result = grossToNet(buildGrossNetInputParams(currentGross, 'gross'));
-        setNetIncome(Math.round(result.net).toString());
-      }
-    } else {
-      // NET → GROSS: dùng GROSS đã tính trong useEffect gần nhất
-      if (lastCalculatedGross.current > 0) {
-        setGrossIncome(lastCalculatedGross.current.toString());
+      if (newMode === "net") {
+        // GROSS → NET: tính NET từ GROSS hiện tại
+        const currentGross = parseInt(grossIncome, 10) || 0;
+        if (currentGross > 0) {
+          const result = grossToNet(
+            buildGrossNetInputParams(currentGross, "gross"),
+          );
+          setNetIncome(Math.round(result.net).toString());
+        }
       } else {
-        // Fallback: tính lại
-        const currentNet = parseInt(netIncome, 10) || 0;
-        if (currentNet > 0) {
-          const result = netToGross(buildGrossNetInputParams(currentNet, 'net'));
-          setGrossIncome(Math.round(result.gross).toString());
+        // NET → GROSS: dùng GROSS đã tính trong useEffect gần nhất
+        if (lastCalculatedGross.current > 0) {
+          setGrossIncome(lastCalculatedGross.current.toString());
+        } else {
+          // Fallback: tính lại
+          const currentNet = parseInt(netIncome, 10) || 0;
+          if (currentNet > 0) {
+            const result = netToGross(
+              buildGrossNetInputParams(currentNet, "net"),
+            );
+            setGrossIncome(Math.round(result.gross).toString());
+          }
         }
       }
-    }
 
-    setInputMode(newMode);
-    setGrossWarning(null);
-  }, [inputMode, grossIncome, netIncome, buildGrossNetInputParams]);
+      setInputMode(newMode);
+      setGrossWarning(null);
+    },
+    [inputMode, grossIncome, netIncome, buildGrossNetInputParams],
+  );
 
   const handleIncomeChange = (value: string) => {
-    const stripped = value.replace(/[^\d]/g, '');
-    if (stripped === '') {
-      if (inputMode === 'net') {
-        setNetIncome('');
+    const hasDigits = /\d/.test(value);
+    if (!hasDigits) {
+      if (inputMode === "net") {
+        setNetIncome("");
       } else {
-        setGrossIncome('');
+        setGrossIncome("");
       }
       setGrossWarning(null);
       return;
     }
     const parsed = parseCurrencyInput(value, { max: MAX_MONTHLY_INCOME });
-    if (inputMode === 'net') {
+    if (inputMode === "net") {
       setNetIncome(parsed.value.toString());
     } else {
       setGrossIncome(parsed.value.toString());
@@ -185,9 +240,9 @@ function TaxInputComponent({ onCalculate, initialValues }: TaxInputProps) {
   };
 
   const handleDeclaredSalaryChange = (value: string) => {
-    const stripped = value.replace(/[^\d]/g, '');
-    if (stripped === '') {
-      setDeclaredSalary('');
+    const hasDigits = /\d/.test(value);
+    if (!hasDigits) {
+      setDeclaredSalary("");
       setDeclaredWarning(null);
       return;
     }
@@ -197,9 +252,9 @@ function TaxInputComponent({ onCalculate, initialValues }: TaxInputProps) {
   };
 
   const handleOtherDeductionsChange = (value: string) => {
-    const stripped = value.replace(/[^\d]/g, '');
-    if (stripped === '') {
-      setOtherDeductions('');
+    const hasDigits = /\d/.test(value);
+    if (!hasDigits) {
+      setOtherDeductions("");
       setOtherDeductionWarning(null);
       return;
     }
@@ -209,9 +264,9 @@ function TaxInputComponent({ onCalculate, initialValues }: TaxInputProps) {
   };
 
   const handlePensionChange = (value: string) => {
-    const stripped = value.replace(/[^\d]/g, '');
-    if (stripped === '') {
-      setPensionContribution('');
+    const hasDigits = /\d/.test(value);
+    if (!hasDigits) {
+      setPensionContribution("");
       setPensionWarning(null);
       return;
     }
@@ -221,39 +276,51 @@ function TaxInputComponent({ onCalculate, initialValues }: TaxInputProps) {
   };
 
   const handleInsuranceToggle = (type: keyof InsuranceOptions) => {
-    setInsuranceOptions(prev => ({
+    setInsuranceOptions((prev) => ({
       ...prev,
       [type]: !prev[type],
     }));
   };
 
-  const handleAllowanceChange = (field: keyof AllowancesState, value: string) => {
+  const handleAllowanceChange = (
+    field: keyof AllowancesState,
+    value: string,
+  ) => {
     const parsed = parseCurrencyInput(value, { max: MAX_MONTHLY_INCOME });
-    setAllowances(prev => ({
+    setAllowances((prev) => ({
       ...prev,
       [field]: parsed.value,
     }));
     setAllowanceWarning(buildWarning(parsed.issues, MAX_MONTHLY_INCOME));
   };
 
-  const buildWarning = (issues: CurrencyInputIssues, max?: number): string | null => {
+  const buildWarning = (
+    issues: CurrencyInputIssues,
+    max?: number,
+  ): string | null => {
     const messages: string[] = [];
     if (issues.negative) {
-      messages.push('Không hỗ trợ số âm.');
+      messages.push("Không hỗ trợ số âm.");
     }
     if (issues.decimal) {
-      messages.push('Không hỗ trợ số thập phân, đã bỏ phần lẻ.');
+      messages.push("Không hỗ trợ số thập phân, đã bỏ phần lẻ.");
     }
     if (issues.overflow && max) {
-      messages.push(`Giá trị quá lớn, giới hạn tối đa ${formatNumber(max)} VNĐ.`);
+      messages.push(
+        `Giá trị quá lớn, giới hạn tối đa ${formatNumber(max)} VNĐ.`,
+      );
     }
-    return messages.length ? messages.join(' ') : null;
+    return messages.length ? messages.join(" ") : null;
   };
 
   // Sync hasInsurance with individual options
   useEffect(() => {
-    const allEnabled = insuranceOptions.bhxh && insuranceOptions.bhyt && insuranceOptions.bhtn;
-    const allDisabled = !insuranceOptions.bhxh && !insuranceOptions.bhyt && !insuranceOptions.bhtn;
+    const allEnabled =
+      insuranceOptions.bhxh && insuranceOptions.bhyt && insuranceOptions.bhtn;
+    const allDisabled =
+      !insuranceOptions.bhxh &&
+      !insuranceOptions.bhyt &&
+      !insuranceOptions.bhtn;
     if (allDisabled && hasInsurance) {
       setHasInsurance(false);
     } else if (allEnabled && !hasInsurance) {
@@ -267,11 +334,11 @@ function TaxInputComponent({ onCalculate, initialValues }: TaxInputProps) {
   useEffect(() => {
     let income: number;
 
-    if (inputMode === 'net') {
+    if (inputMode === "net") {
       // NET mode: tính GROSS từ NET rồi truyền GROSS cho onCalculate
       const net = parseInt(netIncome, 10) || 0;
       if (net > 0) {
-        const result = netToGross(buildGrossNetInputParams(net, 'net'));
+        const result = netToGross(buildGrossNetInputParams(net, "net"));
         income = Math.round(result.gross);
       } else {
         income = 0;
@@ -281,7 +348,9 @@ function TaxInputComponent({ onCalculate, initialValues }: TaxInputProps) {
       income = parseInt(grossIncome, 10) || 0;
     }
 
-    const declared = useDeclaredSalary ? (parseInt(declaredSalary, 10) || income) : undefined;
+    const declared = useDeclaredSalary
+      ? parseInt(declaredSalary, 10) || income
+      : undefined;
     const other = parseInt(otherDeductions, 10) || 0;
     const pension = parseInt(pensionContribution, 10) || 0;
     // Only include allowances if showAllowances is enabled
@@ -299,28 +368,70 @@ function TaxInputComponent({ onCalculate, initialValues }: TaxInputProps) {
       pensionContribution: pension,
       allowances: effectiveAllowances,
     });
-  }, [grossIncome, netIncome, inputMode, useDeclaredSalary, declaredSalary, dependents, otherDeductions, hasInsurance, insuranceOptions, region, pensionContribution, showAllowances, allowances, onCalculate, buildGrossNetInputParams]);
+  }, [
+    grossIncome,
+    netIncome,
+    inputMode,
+    useDeclaredSalary,
+    declaredSalary,
+    dependents,
+    otherDeductions,
+    hasInsurance,
+    insuranceOptions,
+    region,
+    pensionContribution,
+    showAllowances,
+    allowances,
+    onCalculate,
+    buildGrossNetInputParams,
+  ]);
 
-  const presetIncomes = [15_000_000, 20_000_000, 30_000_000, 50_000_000, 80_000_000, 100_000_000];
-  const presetNetIncomes = [10_000_000, 15_000_000, 20_000_000, 30_000_000, 50_000_000, 70_000_000];
+  const presetIncomes = [
+    15_000_000, 20_000_000, 30_000_000, 50_000_000, 80_000_000, 100_000_000,
+  ];
+  const presetNetIncomes = [
+    10_000_000, 15_000_000, 20_000_000, 30_000_000, 50_000_000, 70_000_000,
+  ];
 
   const insuranceItems = [
-    { key: 'bhxh' as const, label: 'BHXH', rate: '8%' },
-    { key: 'bhyt' as const, label: 'BHYT', rate: '1.5%' },
-    { key: 'bhtn' as const, label: 'BHTN', rate: '1%' },
+    { key: "bhxh" as const, label: "BHXH", rate: "8%" },
+    { key: "bhyt" as const, label: "BHYT", rate: "1.5%" },
+    { key: "bhtn" as const, label: "BHTN", rate: "1%" },
   ];
 
   const InfoIcon = () => (
-    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-    </svg>
+    <span className="inline-flex items-center justify-center w-[44px] h-[44px] -m-3 text-gray-500 hover:text-gray-700 cursor-help rounded-full hover:bg-gray-100 transition-colors">
+      <svg
+        className="w-4 h-4"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+        />
+      </svg>
+    </span>
   );
 
   return (
     <div className="card">
       <h2 className="text-xl font-bold text-gray-800 mb-6 flex items-center gap-2">
-        <svg className="w-6 h-6 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+        <svg
+          className="w-6 h-6 text-primary-600"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"
+          />
         </svg>
         Thông tin thu nhập
       </h2>
@@ -328,37 +439,56 @@ function TaxInputComponent({ onCalculate, initialValues }: TaxInputProps) {
       <div className="space-y-6">
         {/* Toggle GROSS / NET */}
         <div>
-          <div className="flex gap-2 mb-3" role="radiogroup" aria-label="Chọn loại thu nhập đầu vào">
+          <div
+            className="flex gap-2 mb-3"
+            role="radiogroup"
+            aria-label="Chọn loại thu nhập đầu vào"
+          >
             <button
-              onClick={() => handleModeChange('gross')}
+              onClick={() => handleModeChange("gross")}
               role="radio"
-              aria-checked={inputMode === 'gross'}
+              aria-checked={inputMode === "gross"}
               className={`flex-1 py-2 px-4 min-h-[44px] rounded-lg font-medium text-sm transition-colors ${
-                inputMode === 'gross'
-                  ? 'bg-primary-600 text-white'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                inputMode === "gross"
+                  ? "bg-primary-600 text-white"
+                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
               }`}
             >
               GROSS (Lương gộp)
             </button>
             <button
-              onClick={() => handleModeChange('net')}
+              onClick={() => handleModeChange("net")}
               role="radio"
-              aria-checked={inputMode === 'net'}
+              aria-checked={inputMode === "net"}
               className={`flex-1 py-2 px-4 min-h-[44px] rounded-lg font-medium text-sm transition-colors ${
-                inputMode === 'net'
-                  ? 'bg-primary-600 text-white'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                inputMode === "net"
+                  ? "bg-primary-600 text-white"
+                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
               }`}
             >
               NET (Thực nhận)
             </button>
           </div>
 
-          <label htmlFor="gross-income" className="flex items-center gap-1 text-sm font-medium text-gray-700 mb-2">
-            <span>{inputMode === 'gross' ? 'Thu nhập thực tế hàng tháng (VNĐ)' : 'Thu nhập thực nhận hàng tháng (VNĐ)'}</span>
-            <span className="text-red-500" aria-hidden="true">*</span>
-            <Tooltip content={inputMode === 'gross' ? 'Lương tổng trước khi trừ bảo hiểm và thuế' : 'Lương thực nhận sau khi trừ bảo hiểm và thuế'}>
+          <label
+            htmlFor="gross-income"
+            className="flex items-center gap-1 text-sm font-medium text-gray-700 mb-2"
+          >
+            <span>
+              {inputMode === "gross"
+                ? "Thu nhập thực tế hàng tháng (VNĐ)"
+                : "Thu nhập thực nhận hàng tháng (VNĐ)"}
+            </span>
+            <span className="text-red-500" aria-hidden="true">
+              *
+            </span>
+            <Tooltip
+              content={
+                inputMode === "gross"
+                  ? "Lương tổng trước khi trừ bảo hiểm và thuế"
+                  : "Lương thực nhận sau khi trừ bảo hiểm và thuế"
+              }
+            >
               <span className="text-gray-500 hover:text-gray-700 cursor-help">
                 <InfoIcon />
               </span>
@@ -367,55 +497,74 @@ function TaxInputComponent({ onCalculate, initialValues }: TaxInputProps) {
           <input
             id="gross-income"
             type="text"
-            value={displayCurrency(inputMode === 'net' ? netIncome : grossIncome)}
+            value={displayCurrency(
+              inputMode === "net" ? netIncome : grossIncome,
+            )}
             onChange={(e) => handleIncomeChange(e.target.value)}
             onBlur={() => {
-              if (inputMode === 'net') {
-                if (netIncome === '') setNetIncome('0');
+              if (inputMode === "net") {
+                if (netIncome === "") setNetIncome("0");
               } else {
-                if (grossIncome === '') setGrossIncome('0');
+                if (grossIncome === "") setGrossIncome("0");
               }
             }}
             className="input-field text-lg font-semibold"
-            placeholder={inputMode === 'gross' ? 'Nhập thu nhập GROSS' : 'Nhập thu nhập NET'}
+            placeholder={
+              inputMode === "gross"
+                ? "Nhập thu nhập GROSS"
+                : "Nhập thu nhập NET"
+            }
             aria-required="true"
             aria-describedby="gross-income-presets"
           />
           {grossWarning && (
             <p className="text-xs text-amber-600 mt-2">{grossWarning}</p>
           )}
-          <div id="gross-income-presets" className="mt-3 flex flex-wrap gap-2" role="group" aria-label="Mức thu nhập mẫu">
-            {(inputMode === 'net' ? presetNetIncomes : presetIncomes).map((income) => {
-              const currentValue = parseInt(inputMode === 'net' ? netIncome : grossIncome, 10);
-              return (
-                <button
-                  key={income}
-                  onClick={() => {
-                    if (inputMode === 'net') {
-                      setNetIncome(income.toString());
-                    } else {
-                      setGrossIncome(income.toString());
-                    }
-                    setGrossWarning(null);
-                  }}
-                  aria-label={`Chọn mức thu nhập ${formatNumber(income)} VNĐ`}
-                  aria-pressed={currentValue === income}
-                  className={`px-3 py-2.5 sm:py-1.5 min-h-[44px] sm:min-h-0 text-sm rounded-full transition-colors ${
-                    currentValue === income
-                      ? 'bg-primary-600 text-white'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                  }`}
-                >
-                  {formatNumber(income)}
-                </button>
-              );
-            })}
+          <div
+            id="gross-income-presets"
+            className="mt-3 flex flex-wrap gap-2"
+            role="group"
+            aria-label="Mức thu nhập mẫu"
+          >
+            {(inputMode === "net" ? presetNetIncomes : presetIncomes).map(
+              (income) => {
+                const currentValue = parseInt(
+                  inputMode === "net" ? netIncome : grossIncome,
+                  10,
+                );
+                return (
+                  <button
+                    key={income}
+                    onClick={() => {
+                      if (inputMode === "net") {
+                        setNetIncome(income.toString());
+                      } else {
+                        setGrossIncome(income.toString());
+                      }
+                      setGrossWarning(null);
+                    }}
+                    aria-label={`Chọn mức thu nhập ${formatNumber(income)} VNĐ`}
+                    aria-pressed={currentValue === income}
+                    className={`px-3 py-2.5 sm:py-1.5 min-h-[44px] sm:min-h-0 text-sm rounded-full transition-colors ${
+                      currentValue === income
+                        ? "bg-primary-600 text-white"
+                        : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                    }`}
+                  >
+                    {formatNumber(income)}
+                  </button>
+                );
+              },
+            )}
           </div>
         </div>
 
         {/* Lương đóng bảo hiểm */}
         <div className="bg-amber-50 rounded-lg p-4 border border-amber-200">
-          <label htmlFor="use-declared-salary" className="flex items-center gap-3 cursor-pointer mb-3 min-h-[44px] py-2">
+          <label
+            htmlFor="use-declared-salary"
+            className="flex items-center gap-3 cursor-pointer mb-3 min-h-[44px] py-2"
+          >
             <span className="relative flex items-center justify-center w-[44px] h-[44px] -m-2">
               <input
                 id="use-declared-salary"
@@ -431,7 +580,10 @@ function TaxInputComponent({ onCalculate, initialValues }: TaxInputProps) {
           </label>
           {useDeclaredSalary && (
             <div>
-              <label htmlFor="declared-salary" className="flex items-center gap-1 text-sm font-medium text-gray-700 mb-2">
+              <label
+                htmlFor="declared-salary"
+                className="flex items-center gap-1 text-sm font-medium text-gray-700 mb-2"
+              >
                 <span>Lương đóng BHXH, BHYT, BHTN (VNĐ)</span>
                 <Tooltip content="Mức lương công ty đăng ký đóng bảo hiểm. Bảo hiểm sẽ tính trên mức này, còn thuế TNCN vẫn tính trên lương thực nhận.">
                   <span className="text-gray-500 hover:text-gray-700 cursor-help">
@@ -451,8 +603,12 @@ function TaxInputComponent({ onCalculate, initialValues }: TaxInputProps) {
               {declaredWarning && (
                 <p className="text-xs text-amber-600 mt-1">{declaredWarning}</p>
               )}
-              <p id="declared-salary-hint" className="text-xs text-amber-600 mt-1">
-                Bảo hiểm tính trên mức này • Thuế tính trên lương thực ({grossIncome ? formatNumber(parseInt(grossIncome, 10)) : '0'}đ)
+              <p
+                id="declared-salary-hint"
+                className="text-xs text-amber-600 mt-1"
+              >
+                Bảo hiểm tính trên mức này • Thuế tính trên lương thực (
+                {grossIncome ? formatNumber(parseInt(grossIncome, 10)) : "0"}đ)
               </p>
             </div>
           )}
@@ -460,7 +616,10 @@ function TaxInputComponent({ onCalculate, initialValues }: TaxInputProps) {
 
         {/* Số người phụ thuộc */}
         <div>
-          <label id="dependents-label" className="flex items-center gap-1 text-sm font-medium text-gray-700 mb-2">
+          <label
+            id="dependents-label"
+            className="flex items-center gap-1 text-sm font-medium text-gray-700 mb-2"
+          >
             <span>Số người phụ thuộc</span>
             <Tooltip content="Con cái dưới 18 tuổi, cha mẹ trên 60 tuổi không có thu nhập, v.v.">
               <span className="text-gray-500 hover:text-gray-700 cursor-help">
@@ -468,7 +627,11 @@ function TaxInputComponent({ onCalculate, initialValues }: TaxInputProps) {
               </span>
             </Tooltip>
           </label>
-          <div className="flex items-center gap-4" role="group" aria-labelledby="dependents-label">
+          <div
+            className="flex items-center gap-4"
+            role="group"
+            aria-labelledby="dependents-label"
+          >
             <button
               onClick={() => setDependents(Math.max(0, dependents - 1))}
               aria-label="Giảm số người phụ thuộc"
@@ -477,7 +640,11 @@ function TaxInputComponent({ onCalculate, initialValues }: TaxInputProps) {
             >
               -
             </button>
-            <span className="text-3xl font-bold text-gray-800 w-16 text-center" aria-live="polite" aria-atomic="true">
+            <span
+              className="text-3xl font-bold text-gray-800 w-16 text-center"
+              aria-live="polite"
+              aria-atomic="true"
+            >
               {dependents}
             </span>
             <button
@@ -503,7 +670,11 @@ function TaxInputComponent({ onCalculate, initialValues }: TaxInputProps) {
               </span>
             </Tooltip>
           </label>
-          <div className="grid grid-cols-1 xs:grid-cols-2 gap-2" role="group" aria-label="Chọn vùng lương">
+          <div
+            className="grid grid-cols-1 xs:grid-cols-2 gap-2"
+            role="group"
+            aria-label="Chọn vùng lương"
+          >
             {([1, 2, 3, 4] as RegionType[]).map((r) => {
               const info = regionalMinimumWages[r];
               const isSelected = region === r;
@@ -514,11 +685,13 @@ function TaxInputComponent({ onCalculate, initialValues }: TaxInputProps) {
                   aria-pressed={isSelected}
                   className={`p-2.5 min-h-[44px] rounded-lg border-2 text-left transition-all ${
                     isSelected
-                      ? 'border-primary-500 bg-primary-50'
-                      : 'border-gray-200 hover:border-gray-300'
+                      ? "border-primary-500 bg-primary-50"
+                      : "border-gray-200 hover:border-gray-300"
                   }`}
                 >
-                  <div className="font-semibold text-xs text-gray-800">{info.name}</div>
+                  <div className="font-semibold text-xs text-gray-800">
+                    {info.name}
+                  </div>
                   <div className="text-xs text-primary-600 font-medium">
                     {formatCurrency(info.wage)}
                   </div>
@@ -542,8 +715,12 @@ function TaxInputComponent({ onCalculate, initialValues }: TaxInputProps) {
             </Tooltip>
           </legend>
           <div className="space-y-1">
-            {insuranceItems.map(item => (
-              <label key={item.key} htmlFor={`insurance-${item.key}`} className="flex items-center gap-3 cursor-pointer min-h-[44px] py-1">
+            {insuranceItems.map((item) => (
+              <label
+                key={item.key}
+                htmlFor={`insurance-${item.key}`}
+                className="flex items-center gap-3 cursor-pointer min-h-[44px] py-1"
+              >
                 <span className="relative flex items-center justify-center w-[44px] h-[44px] -m-2">
                   <input
                     id={`insurance-${item.key}`}
@@ -554,13 +731,20 @@ function TaxInputComponent({ onCalculate, initialValues }: TaxInputProps) {
                   />
                 </span>
                 <span className="text-sm text-gray-700">
-                  {item.label} <span className="text-gray-500">({item.rate})</span>
+                  {item.label}{" "}
+                  <span className="text-gray-500">({item.rate})</span>
                 </span>
               </label>
             ))}
           </div>
           <p className="text-xs text-gray-500 mt-2" aria-live="polite">
-            Tổng: {((insuranceOptions.bhxh ? 8 : 0) + (insuranceOptions.bhyt ? 1.5 : 0) + (insuranceOptions.bhtn ? 1 : 0)).toFixed(1)}%
+            Tổng:{" "}
+            {(
+              (insuranceOptions.bhxh ? 8 : 0) +
+              (insuranceOptions.bhyt ? 1.5 : 0) +
+              (insuranceOptions.bhtn ? 1 : 0)
+            ).toFixed(1)}
+            %
           </p>
         </fieldset>
 
@@ -571,22 +755,34 @@ function TaxInputComponent({ onCalculate, initialValues }: TaxInputProps) {
           className="text-sm text-primary-600 hover:text-primary-700 flex items-center gap-1 min-h-[44px] py-2"
         >
           <svg
-            className={`w-4 h-4 transition-transform ${showAdvanced ? 'rotate-90' : ''}`}
+            className={`w-4 h-4 transition-transform ${showAdvanced ? "rotate-90" : ""}`}
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
             aria-hidden="true"
           >
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M9 5l7 7-7 7"
+            />
           </svg>
           Các khoản giảm trừ khác
         </button>
 
         {showAdvanced && (
-          <div className="space-y-4 pl-4 border-l-2 border-primary-100" role="region" aria-label="Các khoản giảm trừ khác">
+          <div
+            className="space-y-4 pl-4 border-l-2 border-primary-100"
+            role="region"
+            aria-label="Các khoản giảm trừ khác"
+          >
             {/* Quỹ hưu trí tự nguyện */}
             <div>
-              <label htmlFor="pension-contribution" className="flex items-center gap-1 text-sm font-medium text-gray-700 mb-2">
+              <label
+                htmlFor="pension-contribution"
+                className="flex items-center gap-1 text-sm font-medium text-gray-700 mb-2"
+              >
                 <span>Quỹ hưu trí tự nguyện (VNĐ/tháng)</span>
                 <Tooltip content="Tối đa 1 triệu/tháng được giảm trừ">
                   <span className="text-gray-500 hover:text-gray-700 cursor-help">
@@ -598,7 +794,9 @@ function TaxInputComponent({ onCalculate, initialValues }: TaxInputProps) {
                 id="pension-contribution"
                 type="text"
                 value={displayCurrency(pensionContribution)}
-                onBlur={() => { if (pensionContribution === '') setPensionContribution('0'); }}
+                onBlur={() => {
+                  if (pensionContribution === "") setPensionContribution("0");
+                }}
                 onChange={(e) => handlePensionChange(e.target.value)}
                 className="input-field"
                 placeholder="Tối đa 1.000.000"
@@ -607,14 +805,20 @@ function TaxInputComponent({ onCalculate, initialValues }: TaxInputProps) {
               {pensionWarning && (
                 <p className="text-xs text-amber-600 mt-1">{pensionWarning}</p>
               )}
-              <p id="pension-contribution-hint" className="text-xs text-gray-500 mt-1">
+              <p
+                id="pension-contribution-hint"
+                className="text-xs text-gray-500 mt-1"
+              >
                 Tối đa 1.000.000 VNĐ/tháng được giảm trừ
               </p>
             </div>
 
             {/* Đóng góp từ thiện */}
             <div>
-              <label htmlFor="other-deductions" className="flex items-center gap-1 text-sm font-medium text-gray-700 mb-2">
+              <label
+                htmlFor="other-deductions"
+                className="flex items-center gap-1 text-sm font-medium text-gray-700 mb-2"
+              >
                 <span>Đóng góp từ thiện, nhân đạo (VNĐ)</span>
                 <Tooltip content="Các khoản giảm trừ bổ sung như từ thiện, nhân đạo">
                   <span className="text-gray-500 hover:text-gray-700 cursor-help">
@@ -626,16 +830,23 @@ function TaxInputComponent({ onCalculate, initialValues }: TaxInputProps) {
                 id="other-deductions"
                 type="text"
                 value={displayCurrency(otherDeductions)}
-                onBlur={() => { if (otherDeductions === '') setOtherDeductions('0'); }}
+                onBlur={() => {
+                  if (otherDeductions === "") setOtherDeductions("0");
+                }}
                 onChange={(e) => handleOtherDeductionsChange(e.target.value)}
                 className="input-field"
                 placeholder="Đóng góp từ thiện..."
                 aria-describedby="other-deductions-hint"
               />
               {otherDeductionWarning && (
-                <p className="text-xs text-amber-600 mt-1">{otherDeductionWarning}</p>
+                <p className="text-xs text-amber-600 mt-1">
+                  {otherDeductionWarning}
+                </p>
               )}
-              <p id="other-deductions-hint" className="text-xs text-gray-500 mt-1">
+              <p
+                id="other-deductions-hint"
+                className="text-xs text-gray-500 mt-1"
+              >
                 Đóng góp qua các tổ chức từ thiện được công nhận
               </p>
             </div>
@@ -649,13 +860,18 @@ function TaxInputComponent({ onCalculate, initialValues }: TaxInputProps) {
           className="text-sm text-green-600 hover:text-green-700 flex items-center gap-1 min-h-[44px] py-2"
         >
           <svg
-            className={`w-4 h-4 transition-transform ${showAllowances ? 'rotate-90' : ''}`}
+            className={`w-4 h-4 transition-transform ${showAllowances ? "rotate-90" : ""}`}
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
             aria-hidden="true"
           >
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M9 5l7 7-7 7"
+            />
           </svg>
           Phụ cấp (ăn trưa, điện thoại, độc hại...)
         </button>
@@ -668,8 +884,18 @@ function TaxInputComponent({ onCalculate, initialValues }: TaxInputProps) {
             {/* Tax-exempt allowances */}
             <div>
               <h4 className="text-sm font-semibold text-green-800 mb-3 flex items-center gap-2">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
                 </svg>
                 Phụ cấp MIỄN THUẾ
               </h4>
@@ -686,8 +912,10 @@ function TaxInputComponent({ onCalculate, initialValues }: TaxInputProps) {
                   </label>
                   <input
                     type="text"
-                    value={allowances.meal ? formatNumber(allowances.meal) : ''}
-                    onChange={(e) => handleAllowanceChange('meal', e.target.value)}
+                    value={allowances.meal ? formatNumber(allowances.meal) : ""}
+                    onChange={(e) =>
+                      handleAllowanceChange("meal", e.target.value)
+                    }
                     className="input-field text-sm"
                     placeholder="VNĐ/tháng"
                   />
@@ -705,8 +933,12 @@ function TaxInputComponent({ onCalculate, initialValues }: TaxInputProps) {
                   </label>
                   <input
                     type="text"
-                    value={allowances.phone ? formatNumber(allowances.phone) : ''}
-                    onChange={(e) => handleAllowanceChange('phone', e.target.value)}
+                    value={
+                      allowances.phone ? formatNumber(allowances.phone) : ""
+                    }
+                    onChange={(e) =>
+                      handleAllowanceChange("phone", e.target.value)
+                    }
                     className="input-field text-sm"
                     placeholder="VNĐ/tháng"
                   />
@@ -724,8 +956,14 @@ function TaxInputComponent({ onCalculate, initialValues }: TaxInputProps) {
                   </label>
                   <input
                     type="text"
-                    value={allowances.transport ? formatNumber(allowances.transport) : ''}
-                    onChange={(e) => handleAllowanceChange('transport', e.target.value)}
+                    value={
+                      allowances.transport
+                        ? formatNumber(allowances.transport)
+                        : ""
+                    }
+                    onChange={(e) =>
+                      handleAllowanceChange("transport", e.target.value)
+                    }
                     className="input-field text-sm"
                     placeholder="VNĐ/tháng"
                   />
@@ -735,7 +973,9 @@ function TaxInputComponent({ onCalculate, initialValues }: TaxInputProps) {
                 <div>
                   <label className="flex items-center gap-1 text-xs font-medium text-gray-700 mb-1">
                     <span>Phụ cấp trang phục</span>
-                    <Tooltip content={`Miễn thuế tối đa ${formatNumber(ALLOWANCE_LIMITS.clothingMonthlyMax)}đ/tháng (5tr/năm). Phần vượt chịu thuế.`}>
+                    <Tooltip
+                      content={`Miễn thuế tối đa ${formatNumber(ALLOWANCE_LIMITS.clothingMonthlyMax)}đ/tháng (5tr/năm). Phần vượt chịu thuế.`}
+                    >
                       <span className="text-gray-500 hover:text-gray-700 cursor-help">
                         <InfoIcon />
                       </span>
@@ -743,14 +983,26 @@ function TaxInputComponent({ onCalculate, initialValues }: TaxInputProps) {
                   </label>
                   <input
                     type="text"
-                    value={allowances.clothing ? formatNumber(allowances.clothing) : ''}
-                    onChange={(e) => handleAllowanceChange('clothing', e.target.value)}
+                    value={
+                      allowances.clothing
+                        ? formatNumber(allowances.clothing)
+                        : ""
+                    }
+                    onChange={(e) =>
+                      handleAllowanceChange("clothing", e.target.value)
+                    }
                     className="input-field text-sm"
                     placeholder="VNĐ/tháng"
                   />
-                  {allowances.clothing > ALLOWANCE_LIMITS.clothingMonthlyMax && (
+                  {allowances.clothing >
+                    ALLOWANCE_LIMITS.clothingMonthlyMax && (
                     <p className="text-xs text-amber-600 mt-1">
-                      Vượt {formatNumber(allowances.clothing - ALLOWANCE_LIMITS.clothingMonthlyMax)}đ sẽ chịu thuế
+                      Vượt{" "}
+                      {formatNumber(
+                        allowances.clothing -
+                          ALLOWANCE_LIMITS.clothingMonthlyMax,
+                      )}
+                      đ sẽ chịu thuế
                     </p>
                   )}
                 </div>
@@ -767,8 +1019,14 @@ function TaxInputComponent({ onCalculate, initialValues }: TaxInputProps) {
                   </label>
                   <input
                     type="text"
-                    value={allowances.hazardous ? formatNumber(allowances.hazardous) : ''}
-                    onChange={(e) => handleAllowanceChange('hazardous', e.target.value)}
+                    value={
+                      allowances.hazardous
+                        ? formatNumber(allowances.hazardous)
+                        : ""
+                    }
+                    onChange={(e) =>
+                      handleAllowanceChange("hazardous", e.target.value)
+                    }
                     className="input-field text-sm"
                     placeholder="VNĐ/tháng (nếu đủ điều kiện)"
                   />
@@ -782,8 +1040,18 @@ function TaxInputComponent({ onCalculate, initialValues }: TaxInputProps) {
             {/* Taxable allowances */}
             <div className="pt-3 border-t border-green-200">
               <h4 className="text-sm font-semibold text-amber-700 mb-3 flex items-center gap-2">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
                 </svg>
                 Phụ cấp CHỊU THUẾ (như lương)
               </h4>
@@ -800,8 +1068,12 @@ function TaxInputComponent({ onCalculate, initialValues }: TaxInputProps) {
                   </label>
                   <input
                     type="text"
-                    value={allowances.housing ? formatNumber(allowances.housing) : ''}
-                    onChange={(e) => handleAllowanceChange('housing', e.target.value)}
+                    value={
+                      allowances.housing ? formatNumber(allowances.housing) : ""
+                    }
+                    onChange={(e) =>
+                      handleAllowanceChange("housing", e.target.value)
+                    }
                     className="input-field text-sm"
                     placeholder="VNĐ/tháng"
                   />
@@ -819,8 +1091,14 @@ function TaxInputComponent({ onCalculate, initialValues }: TaxInputProps) {
                   </label>
                   <input
                     type="text"
-                    value={allowances.position ? formatNumber(allowances.position) : ''}
-                    onChange={(e) => handleAllowanceChange('position', e.target.value)}
+                    value={
+                      allowances.position
+                        ? formatNumber(allowances.position)
+                        : ""
+                    }
+                    onChange={(e) =>
+                      handleAllowanceChange("position", e.target.value)
+                    }
                     className="input-field text-sm"
                     placeholder="VNĐ/tháng"
                   />
